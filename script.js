@@ -46,8 +46,11 @@ let activeDay = 0;
 /** @type {MediaStream | null} */
 let cameraStream = null;
 
-// URL бэкенд-сервера (измените при деплое)
-const API_URL = 'http://localhost:3000';
+// URL бэкенд-сервера (автоматически переключается между localhost и Render)
+const API_BASE =
+  location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : 'https://travel-helper-backend.onrender.com';
 
 // ============================================
 // НАВИГАЦИЯ МЕЖДУ СТРАНИЦАМИ
@@ -130,7 +133,7 @@ async function generateRoute() {
     
     try {
         // Отправляем запрос на бэкенд
-        const response = await fetch(`${API_URL}/api/generate-route`, {
+        const response = await fetch(`${API_BASE}/api/generate-route`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -583,7 +586,7 @@ async function recognizeImage(imageBase64) {
     // Например, Yandex Vision API или другой сервис
     
     // Пример запроса:
-    // const response = await fetch(`${API_URL}/api/recognize`, {
+    // const response = await fetch(`${API_BASE}/api/recognize`, {
     //     method: 'POST',
     //     headers: { 'Content-Type': 'application/json' },
     //     body: JSON.stringify({ image: imageBase64 })
