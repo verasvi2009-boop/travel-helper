@@ -1,0 +1,24 @@
+{
+  "name": "travel-helper",
+  "version": "1.0.0",
+  "description": "Помощник Путешественника - школьный проект с интеграцией Yandex GPT",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "travel",
+    "yandex-gpt",
+    "tourism",
+    "school-project"
+  ],
+  "author": "Школьный проект 10 класс",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  }
+}
+

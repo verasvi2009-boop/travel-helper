@@ -1,0 +1,787 @@
+/* ===========================================
+   ОСНОВНЫЕ СТИЛИ - Помощник Путешественника
+   Школьный проект с Yandex GPT интеграцией
+   =========================================== */
+
+/* Базовые стили */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+/* Управление страницами */
+.page {
+    display: none !important;
+    min-height: 100vh;
+}
+
+.page.active {
+    display: block !important;
+}
+
+/* ===========================================
+   НАВИГАЦИОННАЯ ПАНЕЛЬ
+   =========================================== */
+.nav-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 10px 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.nav-btn-home {
+    background: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.nav-btn-home:hover {
+    background: #45a049;
+}
+
+/* ===========================================
+   ГЛАВНАЯ СТРАНИЦА
+   =========================================== */
+.bg-fon-main {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                url(https://static.tildacdn.info/tild3738-3762-4166-a136-653861363261/MyCollages_13.jpg) 
+                no-repeat center center;
+    background-size: cover;
+    min-height: 100vh;
+}
+
+.main-title {
+    color: #FFFFFF;
+    text-align: center;
+    font-size: 3.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+}
+
+.main-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    font-size: 1.3rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.about-section {
+    padding: 40px 0;
+    background: #fff;
+}
+
+.yandex-map {
+    width: 100%;
+    height: 400px;
+    border: none;
+    border-radius: 8px;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Кнопки главной страницы */
+.start-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 15px 40px;
+    text-decoration: none;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 20px 10px;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.start-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.ar-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+    color: white;
+    padding: 15px 40px;
+    text-decoration: none;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 20px 10px;
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+}
+
+.ar-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+}
+
+.telegram-button {
+    display: inline-flex;
+    align-items: center;
+    background: #0088cc;
+    color: white;
+    text-decoration: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 136, 204, 0.2);
+}
+
+.telegram-button:hover {
+    background: #0077b5;
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+/* ===========================================
+   СТРАНИЦА ФОРМЫ
+   =========================================== */
+.form-background {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                url(https://mir-s3-cdn-cf.behance.net/project_modules/fs/88add927088539.57db56f5ad2a7.jpg) 
+                no-repeat center center;
+    background-size: cover;
+    min-height: 100vh;
+    padding: 80px 20px 40px;
+}
+
+.form-description {
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+.form-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+    font-size: 1.1rem;
+}
+
+.form-control {
+    background-color: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    color: #333;
+    font-size: 1rem;
+    padding: 12px 15px;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.form-control::placeholder {
+    color: #999;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.search-button {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.search-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.search-button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Индикатор загрузки */
+.loading-indicator {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-hint {
+    font-size: 0.9rem;
+    color: #999;
+}
+
+/* Сообщение об ошибке */
+.error-message {
+    background: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* ===========================================
+   СТРАНИЦА МАРШРУТА
+   =========================================== */
+.route-background {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 80px 20px 40px;
+}
+
+.route-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.route-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.route-header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Кнопки выбора дня */
+.day-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.day-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.day-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.day-btn.active {
+    background: white;
+    color: #764ba2;
+    border-color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Контент маршрута */
+.route-content {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+/* Карточка достопримечательности */
+.route-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 20px;
+    margin-bottom: 15px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #4CAF50;
+    transition: transform 0.2s ease;
+}
+
+.route-item:hover {
+    transform: translateX(5px);
+}
+
+.route-item.type-food {
+    border-left-color: #FF9800;
+}
+
+.route-item.type-walk {
+    border-left-color: #2196F3;
+}
+
+.route-item-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.route-item-content {
+    flex: 1;
+}
+
+.route-item-time {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.route-item-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.route-item-description {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.route-item-address {
+    color: #999;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* Ссылка на AR */
+.ar-link-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.ar-link-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* ===========================================
+   AR СТРАНИЦА
+   =========================================== */
+.ar-background {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    min-height: 100vh;
+    padding: 80px 20px 40px;
+}
+
+.ar-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.ar-header h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.ar-header p {
+    opacity: 0.8;
+}
+
+/* Контейнер камеры */
+.camera-container {
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+}
+
+.camera-preview {
+    width: 100%;
+    height: 400px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
+    color: white;
+}
+
+/* Видео камеры */
+.camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Видоискатель камеры */
+.camera-viewfinder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+.camera-viewfinder::before,
+.camera-viewfinder::after {
+    content: '';
+    position: absolute;
+    background: #4CAF50;
+}
+
+.camera-viewfinder::before {
+    width: 30px;
+    height: 3px;
+    top: -2px;
+    left: 20px;
+}
+
+.camera-viewfinder::after {
+    width: 3px;
+    height: 30px;
+    top: 20px;
+    left: -2px;
+}
+
+/* Маркеры объектов */
+.object-marker {
+    position: absolute;
+    font-size: 35px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    z-index: 10;
+    animation: float 3s ease-in-out infinite;
+}
+
+.object-marker:hover {
+    transform: scale(1.3);
+}
+
+.object-marker:nth-child(1) { top: 20%; left: 20%; animation-delay: 0s; }
+.object-marker:nth-child(2) { top: 30%; right: 25%; animation-delay: 0.5s; }
+.object-marker:nth-child(3) { bottom: 30%; left: 30%; animation-delay: 1s; }
+.object-marker:nth-child(4) { bottom: 25%; right: 20%; animation-delay: 1.5s; }
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Информация об объекте */
+.object-info {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 320px;
+    text-align: center;
+    z-index: 100;
+    animation: slideUp 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.object-info-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.object-info-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.object-info-description {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    line-height: 1.4;
+}
+
+/* Панель сканирования */
+.scan-overlay {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.scan-dot {
+    width: 10px;
+    height: 10px;
+    background: #4CAF50;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Кнопки управления камерой */
+.camera-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.camera-btn {
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.start-camera-btn {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.start-camera-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.stop-camera-btn {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    color: white;
+}
+
+.stop-camera-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+}
+
+.camera-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Подсказки AR */
+.ar-tips {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+}
+
+.ar-tips h3 {
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.ar-tips ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ar-tips li {
+    padding: 8px 0;
+    padding-left: 25px;
+    position: relative;
+    opacity: 0.9;
+}
+
+.ar-tips li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #4CAF50;
+}
+
+/* Сообщение о неподдержке камеры */
+.camera-not-supported {
+    text-align: center;
+    padding: 40px;
+    color: #ff6b6b;
+}
+
+.camera-not-supported h3 {
+    margin-bottom: 10px;
+}
+
+/* ===========================================
+   АДАПТИВНОСТЬ
+   =========================================== */
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 2.5rem;
+    }
+    
+    .nav-bar {
+        padding: 8px 15px;
+    }
+    
+    .nav-btn {
+        padding: 6px 15px;
+        font-size: 13px;
+    }
+    
+    .form-background,
+    .route-background,
+    .ar-background {
+        padding-top: 60px;
+    }
+    
+    .camera-preview {
+        height: 300px;
+    }
+    
+    .day-buttons {
+        gap: 8px;
+    }
+    
+    .day-btn {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+    }
+    
+    .route-item {
+        flex-direction: column;
+    }
+    
+    .route-item-icon {
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+}
+
+/* ===========================================
+   УТИЛИТЫ
+   =========================================== */
+.text-center {
+    text-align: center;
+}
+
+.mt-3 {
+    margin-top: 1rem;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+

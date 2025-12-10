@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Помощник Путешественника</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Навигационная панель (видна на всех страницах кроме главной) -->
+    <nav class="nav-bar" id="navBar" style="display: none;">
+        <button class="nav-btn" onclick="window.history.back()">← Назад</button>
+        <button class="nav-btn nav-btn-home" onclick="goHome()">🏠 Главная</button>
+    </nav>
+
+    <!-- ГЛАВНАЯ СТРАНИЦА -->
+    <div id="page-home" class="page active">
+        <div class="container-fluid bg-fon-main">
+            <div class="container">
+                <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+                    <div class="col-12">
+                        <h1 class="main-title">Помощник<br>Путешественника</h1>
+                        <p class="main-subtitle">Создайте идеальный маршрут с помощью ИИ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container-fluid about-section">
+            <div class="container">
+                <div class="row text-center">
+                    <div class="col-12">
+                        <h2 class="mb-4">О нас</h2>
+                        <p>Добро пожаловать в компанию Travel. Мы поможем вам составить персональный маршрут с помощью искусственного интеллекта Yandex GPT.</p>
+                        <p><strong>Телефон:</strong> +7(546) 123-76-94</p>
+                        <p><strong>Email:</strong> travel.help@yandex.ru</p>
+                        <p><strong>Часы работы:</strong> Пн-Пт 9:00-20:00</p>
+                        <p><strong>Адрес:</strong> Москва, ул. Дениса Давыдова д.5</p>
+                        
+                        <div class="contact-links mt-3">
+                            <a href="https://t.me/+4yg-mI92Zww0MmM6" class="telegram-button" target="_blank">
+                                📱 Наш Telegram канал
+                            </a>
+                        </div>
+
+                        <iframe
+                            src="https://yandex.ru/map-widget/v1/?ll=37.456369%2C55.764404&z=16&pt=37.456369,55.764404,pm2blm"
+                            class="yandex-map"
+                            title="Наш офис"
+                            allowfullscreen>
+                        </iframe>
+                        
+                        <button class="start-button" onclick="showPage('page-form')">🚀 Начать планирование</button>
+                        
+                        <button class="ar-button" onclick="window.location.href='ar.html'">📷 AR Камера</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА ФОРМЫ -->
+    <div id="page-form" class="page">
+        <div class="form-background">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-8">
+                        <h1 class="main-title mb-4" style="font-size: 2.5rem;">Создайте свой маршрут</h1>
+                        <p class="form-description">Введите город и пожелания — Yandex GPT создаст для вас уникальный маршрут!</p>
+                        
+                        <div class="form-container">
+                            <!-- Город (свободный ввод) -->
+                            <div class="form-group">
+                                <label for="cityInput">🏙️ Город</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="cityInput" 
+                                       placeholder="Введите название города (например: Санкт-Петербург)"
+                                       required>
+                            </div>
+                            
+                            <!-- Количество дней (числовой ввод) -->
+                            <div class="form-group">
+                                <label for="daysInput">📅 Количество дней</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="daysInput" 
+                                       min="1" 
+                                       max="14" 
+                                       value="1"
+                                       placeholder="Введите количество дней (1-14)">
+                            </div>
+                            
+                            <!-- Комментарий / Пожелания (необязательно) -->
+                            <div class="form-group">
+                                <label for="commentInput">💭 Пожелания (необязательно)</label>
+                                <textarea class="form-control" 
+                                          id="commentInput" 
+                                          rows="3"
+                                          placeholder="Например: едем с детьми, хотим парки развлечений, не много музеев..."></textarea>
+                            </div>
+                            
+                            <button id="searchButton" class="search-button" onclick="generateRoute()">
+                                🔍 СОЗДАТЬ МАРШРУТ
+                            </button>
+                            
+                            <!-- Индикатор загрузки -->
+                            <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                                <div class="spinner"></div>
+                                <p>Yandex GPT создаёт маршрут...</p>
+                                <p class="loading-hint">Это может занять до 30 секунд</p>
+                            </div>
+                            
+                            <!-- Сообщение об ошибке -->
+                            <div id="errorMessage" class="error-message" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА МАРШРУТА -->
+    <div id="page-route" class="page">
+        <div class="route-background">
+            <div class="container">
+                <!-- Заголовок с информацией о маршруте -->
+                <div class="route-header">
+                    <h1 id="routeCity">Город</h1>
+                    <p id="routeDays">Количество дней: 1</p>
+                </div>
+                
+                <!-- Кнопки выбора дня -->
+                <div class="day-buttons" id="dayButtons">
+                    <!-- Кнопки генерируются JavaScript -->
+                </div>
+                
+                <!-- Содержимое маршрута на выбранный день -->
+                <div class="route-content" id="routeContent">
+                    <!-- Контент генерируется JavaScript -->
+                </div>
+                
+                <!-- Кнопка для AR камеры -->
+                <div class="text-center mt-4">
+                    <a href="ar.html" class="ar-link-button">📷 Открыть AR камеру для осмотра</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
