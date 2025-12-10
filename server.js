@@ -24,11 +24,8 @@ const PORT = process.env.PORT || 3000;
 // НАСТРОЙКА MIDDLEWARE
 // ============================================
 
-// Разрешаем CORS для всех источников (для разработки)
-app.use(cors());
-
-// Парсинг JSON в теле запроса
-app.use(express.json());
+app.use(cors());          // allow requests from GitHub Pages and other origins
+app.use(express.json());  // make sure JSON body parsing is enabled
 
 // Раздача статических файлов (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname)));
