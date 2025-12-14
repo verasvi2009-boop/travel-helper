@@ -90,6 +90,12 @@ app.post('/api/generate-route', async (req, res) => {
     try {
         const { city, days, comment } = req.body;
         
+        // Нормализуем язык (по умолчанию русский)
+        let language = req.body.language;
+        if (!['ru', 'en', 'zh'].includes(language)) {
+            language = 'ru';
+        }
+        
         // Валидация входных данных
         if (!city || typeof city !== 'string' || city.trim().length === 0) {
             return res.status(400).json({ 
@@ -112,13 +118,13 @@ app.post('/api/generate-route', async (req, res) => {
             });
         }
         
-        console.log(`Генерация маршрута: ${city}, ${daysCount} дней`);
+        console.log(`Генерация маршрута: ${city}, ${daysCount} дней, язык: ${language}`);
         if (comment) {
             console.log(`Пожелания: ${comment}`);
         }
         
         // Генерируем маршрут через Yandex GPT
-        const routeData = await generateRouteWithYandexGPT(city.trim(), daysCount, comment || '');
+        const routeData = await generateRouteWithYandexGPT(city.trim(), daysCount, comment || '', language);
         
         // Возвращаем результат
         res.json(routeData);
@@ -140,57 +146,88 @@ app.post('/api/generate-route', async (req, res) => {
  * @param {string} city - Название города
  * @param {number} days - Количество дней
  * @param {string} comment - Дополнительные пожелания
+ * @param {string} language - Язык ответа (ru, en, zh)
  * @returns {Promise<RouteData>}
  */
-async function generateRouteWithYandexGPT(city, days, comment) {
+async function generateRouteWithYandexGPT(city, days, comment, language = 'ru') {
+    // Инструкции по языку ответа
+    const languageInstructions = {
+        ru: {
+            instruction: 'Отвечай на русском языке.',
+            dayLabel: 'День',
+            wishesNote: 'Пожелания туриста могут быть на любом языке, но твой ответ должен быть на русском.'
+        },
+        en: {
+            instruction: 'Answer in English.',
+            dayLabel: 'Day',
+            wishesNote: 'User wishes may be in any language, but your response MUST be in English.'
+        },
+        zh: {
+            instruction: '请用中文回答。',
+            dayLabel: '第',
+            wishesNote: '用户的愿望可能是任何语言，但你的回答必须是中文。'
+        }
+    };
+    
+    const langConfig = languageInstructions[language] || languageInstructions.ru;
+    
     // Формируем промпт для модели
-    const systemPrompt = `Ты — профессиональный туристический гид и планировщик путешествий.
-Твоя задача — создавать детальные маршруты для туристов.
+    const systemPrompt = `You are a professional travel guide and trip planner.
+Your task is to create detailed routes for tourists.
 
-ВАЖНЫЕ ПРАВИЛА:
-1. Отвечай ТОЛЬКО валидным JSON без дополнительного текста
-2. Не добавляй комментарии или пояснения до или после JSON
-3. Используй только реальные достопримечательности и места
-4. Для каждого дня создавай уникальный маршрут (без повторений)
-5. Учитывай логистику — места должны быть близко друг к другу в рамках дня
-6. Добавляй время приёма пищи (обед, ужин) в подходящее время`;
+IMPORTANT RULES:
+1. Respond ONLY with valid JSON without any additional text
+2. Do not add comments or explanations before or after JSON
+3. Use only real attractions and places
+4. Create a unique route for each day (no repetitions)
+5. Consider logistics — places should be close to each other within a day
+6. Add meal times (lunch, dinner) at appropriate times
 
-    const userPrompt = `Создай туристический маршрут по городу "${city}" на ${days} ${getDaysWord(days)}.
-${comment ? `\nПожелания туриста: ${comment}` : ''}
+LANGUAGE: ${langConfig.instruction}
+${langConfig.wishesNote}`;
 
-Ответь СТРОГО в формате JSON:
+    const userPrompt = `Create a tourist route for the city "${city}" for ${days} day(s).
+${comment ? `\nUser wishes: ${comment}` : ''}
+
+Respond STRICTLY in JSON format:
 {
   "city": "${city}",
   "days": [
     {
-      "label": "День 1",
+      "label": "${langConfig.dayLabel} 1",
       "items": [
         {
           "type": "sight",
-          "title": "Название достопримечательности",
+          "title": "Name of attraction",
           "time": "10:00–12:00",
-          "description": "Подробное описание места и что там интересного (2-3 предложения)",
-          "address": "Точный адрес"
+          "description": "Detailed description of the place (2-3 sentences)",
+          "address": "Exact address",
+          "websiteUrl": "https://... (if you know the official website, otherwise leave empty)"
         },
         {
           "type": "food",
-          "title": "Название кафе/ресторана",
+          "title": "Name of café/restaurant",
           "time": "12:30–13:30",
-          "description": "Описание заведения и рекомендуемые блюда",
-          "address": "Адрес"
+          "description": "Description of the place and recommended dishes",
+          "address": "Address",
+          "websiteUrl": ""
         }
       ]
     }
   ]
 }
 
-Типы мест:
-- "sight" — достопримечательности, музеи, памятники
-- "food" — кафе, рестораны, места для еды
-- "walk" — парки, прогулочные зоны, скверы
+Place types:
+- "sight" — attractions, museums, monuments
+- "food" — cafés, restaurants, places to eat
+- "walk" — parks, walking areas
 
-Каждый день должен содержать 5-7 мест (включая обед и ужин).
-Для каждого дня планируй разные места!`;
+For each place, if you know the official website — add it to "websiteUrl". If not — leave empty string.
+
+Each day should contain 5-7 places (including lunch and dinner).
+Plan different places for each day!
+
+REMEMBER: ${langConfig.instruction} All text content (titles, descriptions, addresses) must be in the specified language.`;
 
     // Отправляем запрос к Yandex GPT
     const response = await fetch(YANDEX_GPT_URL, {
@@ -452,6 +489,104 @@ app.post('/api/recognize-object', upload.single('image'), async (req, res) => {
     console.error('recognize-object error', err);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// ============================================
+// REFINE DAY: УТОЧНЕНИЕ ОДНОГО ДНЯ МАРШРУТА
+// ============================================
+
+/**
+ * POST /api/refine-day
+ * Уточняет план одного дня маршрута на основе пожеланий пользователя
+ */
+app.post('/api/refine-day', async (req, res) => {
+    const { city, totalDays, dayIndex, originalDayPlan, userComment } = req.body;
+    
+    // Нормализуем язык (по умолчанию русский)
+    let language = req.body.language;
+    if (!['ru', 'en', 'zh'].includes(language)) {
+        language = 'ru';
+    }
+    
+    // Валидация
+    if (!city) return res.status(400).json({ error: 'Не указан город (city)' });
+    if (dayIndex === undefined) return res.status(400).json({ error: 'Не указан индекс дня (dayIndex)' });
+    if (!originalDayPlan) return res.status(400).json({ error: 'Не передан текущий план дня (originalDayPlan)' });
+    if (!userComment?.trim()) return res.status(400).json({ error: 'Не указаны пожелания (userComment)' });
+    
+    if (!YANDEX_API_KEY || !YANDEX_FOLDER_ID) {
+        return res.status(500).json({ error: 'Сервер не настроен для работы с Yandex GPT' });
+    }
+    
+    console.log(`[refine-day] День ${dayIndex + 1}, город "${city}", язык: ${language}, пожелание: "${userComment}"`);
+    
+    // Настройки языка
+    const langConfig = {
+        ru: { instruction: 'Отвечай на русском языке.', dayLabel: 'День', wishesNote: 'Пожелание пользователя может быть на любом языке, но ответ ДОЛЖЕН быть на русском.' },
+        en: { instruction: 'Answer in English.', dayLabel: 'Day', wishesNote: 'User comment may be in any language, but your response MUST be in English.' },
+        zh: { instruction: '请用中文回答。', dayLabel: '第', wishesNote: '用户评论可能是任何语言，但您的回复必须是中文。' }
+    }[language] || { instruction: 'Отвечай на русском языке.', dayLabel: 'День', wishesNote: '' };
+    
+    try {
+        const systemPrompt = `You are a travel guide. Improve the day plan based on user wishes.
+RULES: 1) Respond ONLY with JSON 2) 5-7 places 3) Optimize for walking 4) If children mentioned — choose kid-friendly places 5) Use real places only
+LANGUAGE: ${langConfig.instruction}
+${langConfig.wishesNote}`;
+
+        const userPrompt = `Current plan for day ${dayIndex + 1} in "${city}":
+${JSON.stringify(originalDayPlan, null, 2)}
+
+USER WISH: "${userComment}"
+
+Return a NEW plan in JSON format:
+{"label":"${langConfig.dayLabel} ${dayIndex + 1}","items":[{"type":"sight|food|walk","title":"...","time":"10:00–12:00","description":"...","address":"...","websiteUrl":""}]}
+
+IMPORTANT: ${langConfig.instruction} All text content must be in the specified language.`;
+
+        const response = await fetch(YANDEX_GPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Api-Key ${YANDEX_API_KEY}`, 'x-folder-id': YANDEX_FOLDER_ID },
+            body: JSON.stringify({
+                modelUri: YANDEX_MODEL,
+                completionOptions: { stream: false, temperature: 0.6, maxTokens: 4000 },
+                messages: [{ role: 'system', text: systemPrompt }, { role: 'user', text: userPrompt }]
+            })
+        });
+        
+        if (!response.ok) {
+            console.error('[refine-day] GPT error:', response.status, await response.text());
+            return res.status(500).json({ error: 'Ошибка при обращении к Yandex GPT' });
+        }
+        
+        const data = await response.json();
+        const resultText = data.result?.alternatives?.[0]?.message?.text;
+        if (!resultText) return res.status(500).json({ error: 'Пустой ответ от Yandex GPT' });
+        
+        // Parse JSON
+        let refinedDay;
+        try {
+            const clean = resultText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+            const match = clean.match(/\{[\s\S]*\}/);
+            refinedDay = match ? JSON.parse(match[0]) : null;
+            if (!refinedDay) throw new Error('No JSON found');
+        } catch (e) {
+            console.error('[refine-day] Parse error:', e, resultText);
+            return res.status(500).json({ error: 'Не удалось распарсить ответ' });
+        }
+        
+        // Validate & fix
+        refinedDay.label = refinedDay.label || `День ${dayIndex + 1}`;
+        refinedDay.items = (refinedDay.items || []).map(item => ({
+            type: item.type || 'sight', title: item.title || '', time: item.time || '',
+            description: item.description || '', address: item.address || '', websiteUrl: item.websiteUrl || ''
+        }));
+        
+        console.log(`[refine-day] OK, ${refinedDay.items.length} мест`);
+        res.json(refinedDay);
+    } catch (err) {
+        console.error('[refine-day] Error:', err);
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    }
 });
 
 // ============================================

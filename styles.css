@@ -66,6 +66,61 @@ body {
     background: #45a049;
 }
 
+/* Переключатель языка */
+.lang-switcher {
+    display: flex;
+    gap: 5px;
+    margin-left: auto;
+}
+
+.lang-switch-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.lang-switch-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.lang-switch-btn.active-lang {
+    background: #2196F3;
+    color: white;
+    border-color: #2196F3;
+}
+
+/* Переключатель языка на главной странице */
+.home-lang-switcher {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 5px;
+    z-index: 1000;
+}
+
+.home-lang-switcher .lang-switch-btn {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.home-lang-switcher .lang-switch-btn:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.home-lang-switcher .lang-switch-btn.active-lang {
+    background: #2196F3;
+    border-color: #2196F3;
+}
+
 /* ===========================================
    ГЛАВНАЯ СТРАНИЦА
    =========================================== */
@@ -321,6 +376,31 @@ textarea.form-control {
     opacity: 0.9;
 }
 
+/* Кнопка сохранения в PDF */
+.save-pdf-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.save-pdf-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+}
+
+.save-pdf-btn:active {
+    transform: translateY(0);
+}
+
 /* Кнопки выбора дня */
 .day-buttons {
     display: flex;
@@ -424,6 +504,143 @@ textarea.form-control {
     font-style: italic;
 }
 
+/* Ссылки в карточке места */
+.route-item-link {
+    color: #1976d2;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.route-item-link:hover {
+    text-decoration: underline;
+    color: #1565c0;
+}
+
+.route-item-maps {
+    margin-top: 8px;
+}
+
+.maps-link {
+    color: #4CAF50;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.maps-link:hover {
+    text-decoration: underline;
+    color: #388e3c;
+}
+
+/* Панель редактирования дня */
+.day-edit-panel {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f0f4f8;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.day-edit-btn {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.day-edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+}
+
+.day-edit-form {
+    margin-top: 15px;
+}
+
+.day-edit-comment {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.day-edit-comment:focus {
+    border-color: #ff9800;
+    outline: none;
+}
+
+.day-edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.day-edit-apply-btn {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.day-edit-apply-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.day-edit-apply-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.day-edit-cancel-btn {
+    background: #9e9e9e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.day-edit-cancel-btn:hover {
+    background: #757575;
+}
+
+.day-edit-error {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #ffebee;
+    color: #c62828;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.day-edit-loading {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #fff3e0;
+    color: #e65100;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
 /* Ссылка на AR */
 .ar-link-button {
     display: inline-block;
@@ -450,12 +667,27 @@ textarea.form-control {
     background: linear-gradient(135deg, #1a1a2e, #16213e);
     min-height: 100vh;
     padding: 80px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* AR Section - card-like container */
+.ar-section {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 750px;
+    width: 100%;
+    margin: 0 auto 30px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .ar-header {
     text-align: center;
     color: white;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .ar-header h1 {
@@ -464,16 +696,31 @@ textarea.form-control {
 }
 
 .ar-header p {
-    opacity: 0.8;
+    opacity: 0.85;
+    font-size: 1rem;
+    line-height: 1.5;
 }
 
-/* Контейнер камеры */
-.camera-container {
+/* Контейнер камеры - improved */
+.camera-container,
+.ar-camera-container {
     background: #000;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     margin-bottom: 20px;
+    position: relative;
+}
+
+/* AR Video element - responsive */
+.ar-video {
+    width: 100%;
+    height: auto;
+    min-height: 280px;
+    max-height: 60vh;
+    object-fit: cover;
+    display: block;
+    background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
 }
 
 .camera-preview {
@@ -631,22 +878,29 @@ textarea.form-control {
 }
 
 /* Кнопки управления камерой */
-.camera-controls {
+.camera-controls,
+.ar-controls {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 15px;
+    gap: 12px;
     padding: 20px;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 0 0 15px 15px;
 }
 
 .camera-btn {
-    padding: 12px 30px;
-    border-radius: 25px;
+    flex: 1 1 30%;
+    min-width: 140px;
+    max-width: 200px;
+    padding: 14px 20px;
+    border-radius: 30px;
     font-size: 1rem;
     font-weight: 600;
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-align: center;
 }
 
 .start-camera-btn {
@@ -659,6 +913,10 @@ textarea.form-control {
     box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
 }
 
+.start-camera-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
 .stop-camera-btn {
     background: linear-gradient(135deg, #f44336, #d32f2f);
     color: white;
@@ -669,11 +927,32 @@ textarea.form-control {
     box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
 }
 
+.stop-camera-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Scan button - purple style */
+#scanObjectBtn {
+    background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+    color: white;
+}
+
+#scanObjectBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+}
+
+#scanObjectBtn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
 .camera-btn:disabled {
-    background: #666;
+    background: #555 !important;
+    color: #999;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.7;
 }
 
 /* Подсказки AR */
@@ -721,6 +1000,75 @@ textarea.form-control {
 }
 
 /* ===========================================
+   AR OBJECT INFO - Recognition Results
+   =========================================== */
+.ar-object-info,
+#arObjectInfo {
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 20px 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+    font-size: 1rem;
+    line-height: 1.6;
+    text-align: center;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    min-height: 24px;
+}
+
+.ar-object-info:empty,
+#arObjectInfo:empty {
+    display: none;
+}
+
+.ar-object-info h2,
+#arObjectInfo h2 {
+    font-size: 1.3rem;
+    margin: 0 0 10px 0;
+    color: #fff;
+}
+
+.ar-object-info p,
+#arObjectInfo p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* Success state - green accent */
+.ar-object-info.success,
+#arObjectInfo.success {
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.15);
+}
+
+.ar-object-info.success h2,
+#arObjectInfo.success h2 {
+    color: #81c784;
+}
+
+/* Error state - BRIGHT and NOTICEABLE */
+.ar-object-info.error,
+#arObjectInfo.error {
+    border-color: #ff5252;
+    background: rgba(255, 82, 82, 0.2);
+    color: #ffcdd2;
+    font-weight: 600;
+}
+
+.ar-object-info.error h2,
+#arObjectInfo.error h2 {
+    color: #ff8a80;
+}
+
+/* Scanning / loading state */
+.ar-object-info.loading,
+#arObjectInfo.loading {
+    color: #fff;
+    font-style: italic;
+    opacity: 0.9;
+}
+
+/* ===========================================
    АДАПТИВНОСТЬ
    =========================================== */
 @media (max-width: 768px) {
@@ -730,21 +1078,90 @@ textarea.form-control {
     
     .nav-bar {
         padding: 8px 15px;
+        flex-wrap: wrap;
     }
     
     .nav-btn {
-        padding: 6px 15px;
+        padding: 8px 16px;
         font-size: 13px;
+        flex: 1 1 45%;
+        text-align: center;
     }
     
     .form-background,
     .route-background,
     .ar-background {
-        padding-top: 60px;
+        padding-top: 70px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    /* AR Section - mobile adjustments */
+    .ar-section {
+        padding: 20px 15px;
+        margin-bottom: 20px;
+        border-radius: 15px;
+    }
+    
+    .ar-header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .ar-header p {
+        font-size: 0.9rem;
+    }
+    
+    /* Camera controls - stack vertically on mobile */
+    .camera-controls,
+    .ar-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .camera-btn {
+        flex: none;
+        width: 100%;
+        max-width: none;
+        min-width: auto;
+        padding: 16px 20px;
+        font-size: 1rem;
     }
     
     .camera-preview {
         height: 300px;
+    }
+    
+    .ar-video {
+        min-height: 220px;
+        max-height: 50vh;
+    }
+    
+    /* AR tips - reduce size */
+    .ar-tips {
+        padding: 15px;
+    }
+    
+    .ar-tips h3 {
+        font-size: 1rem;
+    }
+    
+    .ar-tips li {
+        font-size: 0.9rem;
+        padding: 6px 0 6px 22px;
+    }
+    
+    /* AR info block */
+    .ar-object-info,
+    #arObjectInfo {
+        padding: 15px 18px;
+        font-size: 0.95rem;
+    }
+    
+    .ar-object-info h2,
+    #arObjectInfo h2 {
+        font-size: 1.15rem;
     }
     
     .day-buttons {
@@ -763,6 +1180,77 @@ textarea.form-control {
     .route-item-icon {
         margin-bottom: 10px;
         margin-right: 0;
+    }
+    
+    /* Day edit panel - mobile */
+    .day-edit-panel {
+        padding: 12px;
+    }
+    
+    .day-edit-btn {
+        width: 100%;
+        padding: 12px;
+    }
+    
+    .day-edit-actions {
+        flex-direction: column;
+    }
+    
+    .day-edit-apply-btn,
+    .day-edit-cancel-btn {
+        width: 100%;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .ar-background {
+        padding-top: 65px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .ar-section {
+        padding: 15px 12px;
+        border-radius: 12px;
+    }
+    
+    .ar-header h1 {
+        font-size: 1.4rem;
+    }
+    
+    .ar-header p {
+        font-size: 0.85rem;
+    }
+    
+    .camera-btn {
+        padding: 14px 16px;
+        font-size: 0.95rem;
+    }
+    
+    .ar-video {
+        min-height: 200px;
+        max-height: 45vh;
+    }
+    
+    .ar-tips h3 {
+        font-size: 0.95rem;
+    }
+    
+    .ar-tips li {
+        font-size: 0.85rem;
+    }
+    
+    .ar-object-info,
+    #arObjectInfo {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+    
+    .nav-btn {
+        padding: 7px 12px;
+        font-size: 12px;
     }
 }
 
@@ -783,5 +1271,103 @@ textarea.form-control {
 
 .mb-4 {
     margin-bottom: 1.5rem;
+}
+
+/* ===========================================
+   СТИЛИ ДЛЯ ПЕЧАТИ (PDF)
+   =========================================== */
+@media print {
+    /* Скрываем ненужные элементы при печати */
+    .nav-bar,
+    .save-pdf-btn,
+    .ar-link-button,
+    .day-edit-panel,
+    .day-buttons,
+    .maps-link,
+    #page-home,
+    #page-form {
+        display: none !important;
+    }
+    
+    /* Показываем только страницу маршрута */
+    #page-route {
+        display: block !important;
+    }
+    
+    /* Убираем градиентный фон, делаем белым */
+    body,
+    .route-background {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Маршрут на всю ширину */
+    .route-background .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 20px !important;
+    }
+    
+    /* Заголовок маршрута */
+    .route-header {
+        color: #333 !important;
+        text-shadow: none !important;
+        margin-bottom: 20px !important;
+        border-bottom: 2px solid #333;
+        padding-bottom: 15px;
+    }
+    
+    .route-header h1 {
+        color: #333 !important;
+        text-shadow: none !important;
+        font-size: 24pt !important;
+    }
+    
+    .route-header p {
+        color: #666 !important;
+        font-size: 12pt !important;
+    }
+    
+    /* Карточки мест */
+    .route-content {
+        background: #ffffff !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+    
+    .route-item {
+        background: #f9f9f9 !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid;
+        margin-bottom: 15px !important;
+        padding: 15px !important;
+    }
+    
+    .route-item-title {
+        font-size: 12pt !important;
+        color: #333 !important;
+    }
+    
+    .route-item-description {
+        font-size: 10pt !important;
+        color: #555 !important;
+    }
+    
+    .route-item-time,
+    .route-item-address {
+        font-size: 9pt !important;
+        color: #777 !important;
+    }
+    
+    .route-item-link {
+        color: #333 !important;
+        text-decoration: none !important;
+    }
+    
+    /* Скрываем кнопку website, но показываем URL если есть */
+    .route-item-maps {
+        display: none !important;
+    }
 }
 

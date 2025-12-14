@@ -50,6 +50,280 @@ const API_BASE =
     : 'https://travel-helper-backend.onrender.com';
 
 // ============================================
+// ИНТЕРНАЦИОНАЛИЗАЦИЯ (i18n)
+// ============================================
+
+/** @type {'ru' | 'en' | 'zh'} */
+let currentLanguage = 'ru';
+
+/** Словарь переводов для всех страниц */
+const translations = {
+    ru: {
+        // Навигация
+        'nav.back': '← Назад',
+        'nav.home': '🏠 Главная',
+        // Главная страница
+        'home.title': 'Помощник Путешественника',
+        'home.subtitle': 'Создайте идеальный маршрут с помощью ИИ',
+        'home.startBtn': '🚀 Начать планирование',
+        'home.arBtn': '📷 AR Камера',
+        // О нас
+        'about.title': 'О нас',
+        'about.description': 'Добро пожаловать в компанию Travel. Мы поможем вам составить персональный маршрут с помощью искусственного интеллекта Yandex GPT.',
+        'about.phone': 'Телефон:',
+        'about.email': 'Email:',
+        'about.hours': 'Часы работы:',
+        'about.address': 'Адрес:',
+        'about.telegram': '📱 Наш Telegram канал',
+        // Форма
+        'form.title': 'Создайте свой маршрут',
+        'form.subtitle': 'Введите город и пожелания — Yandex GPT создаст для вас уникальный маршрут!',
+        'form.cityLabel': '🏙️ Город',
+        'form.cityPlaceholder': 'Введите название города (например: Санкт-Петербург)',
+        'form.daysLabel': '📅 Количество дней',
+        'form.daysPlaceholder': 'Введите количество дней (1-14)',
+        'form.wishesLabel': '💭 Пожелания (необязательно)',
+        'form.wishesPlaceholder': 'Например: едем с детьми, хотим парки развлечений, не много музеев...',
+        'form.submitBtn': '🔍 СОЗДАТЬ МАРШРУТ',
+        'form.loading': 'Yandex GPT создаёт маршрут...',
+        'form.loadingHint': 'Это может занять до 30 секунд',
+        // Маршрут
+        'route.daysCount': 'Маршрут на {n} {word}',
+        'route.day': 'День',
+        'route.editBtn': '✏️ Редактировать день',
+        'route.editPlaceholder': 'Опишите, что изменить в этом дне (например: добавить парк, заменить ресторан на кафе, больше мест для детей)...',
+        'route.applyBtn': '✅ Применить изменения',
+        'route.cancelBtn': '❌ Отмена',
+        'route.savePdf': '📄 Сохранить маршрут в PDF',
+        'route.openMaps': '🗺️ Открыть в Яндекс.Картах',
+        'route.arLink': '📷 Открыть AR камеру для осмотра',
+        'route.updating': '⏳ Обновляем маршрут для этого дня...',
+        // AR страница
+        'ar.title': 'AR Распознавание объектов',
+        'ar.subtitle': 'Наведите камеру на достопримечательность, и мы попробуем её распознать с помощью Yandex Vision API.',
+        'ar.startBtn': '▶️ Запустить камеру',
+        'ar.scanBtn': '🔍 Сканировать объект',
+        'ar.stopBtn': '⏹️ Остановить камеру',
+        'ar.tipsTitle': '💡 Советы:',
+        'ar.tip1': 'Направьте камеру на интересующий объект',
+        'ar.tip2': 'Нажмите "Сканировать объект" для распознавания',
+        'ar.tip3': 'Функция работает лучше при хорошем освещении',
+        'ar.scanning': '🔍 Сканирование объекта...',
+        // Ошибки
+        'errors.cityRequired': 'Пожалуйста, введите название города',
+        'errors.daysRange': 'Количество дней должно быть от 1 до 14',
+        'errors.routeFailed': 'Не удалось создать маршрут',
+        'errors.refineFailed': 'Не удалось обновить',
+        'errors.refineEmpty': 'Введите пожелания для изменения маршрута',
+        'errors.cameraAccess': 'Не удалось получить доступ к камере.',
+        'errors.cameraDenied': 'Доступ к камере запрещён. Разрешите доступ в настройках браузера.',
+        'errors.cameraNotFound': 'Камера не найдена на этом устройстве.',
+        'errors.cameraBusy': 'Камера занята другим приложением.',
+        'errors.cameraStart': 'Сначала запустите камеру.',
+        'errors.imageCapture': 'Не удалось получить изображение с камеры.',
+        'errors.recognition': 'Ошибка при распознавании объекта. Попробуйте ещё раз.',
+        'errors.server': 'Произошла ошибка при обращении к серверу.',
+        // Склонения
+        'days.one': 'день',
+        'days.few': 'дня',
+        'days.many': 'дней'
+    },
+    en: {
+        // Navigation
+        'nav.back': '← Back',
+        'nav.home': '🏠 Home',
+        // Home page
+        'home.title': 'Travel Helper',
+        'home.subtitle': 'Create the perfect route with AI',
+        'home.startBtn': '🚀 Start Planning',
+        'home.arBtn': '📷 AR Camera',
+        // About
+        'about.title': 'About Us',
+        'about.description': 'Welcome to Travel company. We will help you create a personalized route using Yandex GPT artificial intelligence.',
+        'about.phone': 'Phone:',
+        'about.email': 'Email:',
+        'about.hours': 'Working hours:',
+        'about.address': 'Address:',
+        'about.telegram': '📱 Our Telegram Channel',
+        // Form
+        'form.title': 'Create Your Route',
+        'form.subtitle': 'Enter a city and preferences — Yandex GPT will create a unique route for you!',
+        'form.cityLabel': '🏙️ City',
+        'form.cityPlaceholder': 'Enter city name (e.g., Saint Petersburg)',
+        'form.daysLabel': '📅 Number of Days',
+        'form.daysPlaceholder': 'Enter number of days (1-14)',
+        'form.wishesLabel': '💭 Preferences (optional)',
+        'form.wishesPlaceholder': 'E.g., traveling with kids, want amusement parks, not many museums...',
+        'form.submitBtn': '🔍 CREATE ROUTE',
+        'form.loading': 'Yandex GPT is creating the route...',
+        'form.loadingHint': 'This may take up to 30 seconds',
+        // Route
+        'route.daysCount': 'Route for {n} {word}',
+        'route.day': 'Day',
+        'route.editBtn': '✏️ Edit day',
+        'route.editPlaceholder': 'Describe what to change (e.g., add a park, replace restaurant with café, more kid-friendly places)...',
+        'route.applyBtn': '✅ Apply Changes',
+        'route.cancelBtn': '❌ Cancel',
+        'route.savePdf': '📄 Save Route as PDF',
+        'route.openMaps': '🗺️ Open in Yandex Maps',
+        'route.arLink': '📷 Open AR camera for viewing',
+        'route.updating': '⏳ Updating route for this day...',
+        // AR page
+        'ar.title': 'AR Object Recognition',
+        'ar.subtitle': 'Point the camera at a landmark, and we will try to recognize it using Yandex Vision API.',
+        'ar.startBtn': '▶️ Start Camera',
+        'ar.scanBtn': '🔍 Scan Object',
+        'ar.stopBtn': '⏹️ Stop Camera',
+        'ar.tipsTitle': '💡 Tips:',
+        'ar.tip1': 'Point the camera at the object of interest',
+        'ar.tip2': 'Press "Scan Object" to recognize',
+        'ar.tip3': 'Works better in good lighting',
+        'ar.scanning': '🔍 Scanning object...',
+        // Errors
+        'errors.cityRequired': 'Please enter a city name',
+        'errors.daysRange': 'Number of days must be between 1 and 14',
+        'errors.routeFailed': 'Failed to create route',
+        'errors.refineFailed': 'Failed to update',
+        'errors.refineEmpty': 'Enter your preferences to change the route',
+        'errors.cameraAccess': 'Could not access camera.',
+        'errors.cameraDenied': 'Camera access denied. Allow access in browser settings.',
+        'errors.cameraNotFound': 'Camera not found on this device.',
+        'errors.cameraBusy': 'Camera is being used by another app.',
+        'errors.cameraStart': 'Start the camera first.',
+        'errors.imageCapture': 'Could not capture image from camera.',
+        'errors.recognition': 'Error recognizing object. Please try again.',
+        'errors.server': 'Server error occurred.',
+        // Plurals
+        'days.one': 'day',
+        'days.few': 'days',
+        'days.many': 'days'
+    },
+    zh: {
+        // 导航
+        'nav.back': '← 返回',
+        'nav.home': '🏠 首页',
+        // 首页
+        'home.title': '旅行助手',
+        'home.subtitle': '用人工智能创建完美路线',
+        'home.startBtn': '🚀 开始规划',
+        'home.arBtn': '📷 AR相机',
+        // 关于我们
+        'about.title': '关于我们',
+        'about.description': '欢迎来到Travel公司。我们将使用Yandex GPT人工智能帮助您创建个性化路线。',
+        'about.phone': '电话：',
+        'about.email': '邮箱：',
+        'about.hours': '工作时间：',
+        'about.address': '地址：',
+        'about.telegram': '📱 我们的Telegram频道',
+        // 表单
+        'form.title': '创建您的路线',
+        'form.subtitle': '输入城市和偏好 - Yandex GPT将为您创建独特的路线！',
+        'form.cityLabel': '🏙️ 城市',
+        'form.cityPlaceholder': '输入城市名称（例如：圣彼得堡）',
+        'form.daysLabel': '📅 天数',
+        'form.daysPlaceholder': '输入天数（1-14）',
+        'form.wishesLabel': '💭 偏好（可选）',
+        'form.wishesPlaceholder': '例如：带孩子旅行，想去游乐园，不要太多博物馆...',
+        'form.submitBtn': '🔍 创建路线',
+        'form.loading': 'Yandex GPT正在创建路线...',
+        'form.loadingHint': '这可能需要30秒',
+        // 路线
+        'route.daysCount': '{n}天路线',
+        'route.day': '第',
+        'route.editBtn': '✏️ 编辑当天',
+        'route.editPlaceholder': '描述要更改的内容（例如：添加公园，用咖啡馆替换餐厅，更多适合儿童的地方）...',
+        'route.applyBtn': '✅ 应用更改',
+        'route.cancelBtn': '❌ 取消',
+        'route.savePdf': '📄 保存为PDF',
+        'route.openMaps': '🗺️ 在Yandex地图中打开',
+        'route.arLink': '📷 打开AR相机查看',
+        'route.updating': '⏳ 正在更新当天路线...',
+        // AR页面
+        'ar.title': 'AR物体识别',
+        'ar.subtitle': '将相机对准地标，我们将尝试使用Yandex Vision API识别它。',
+        'ar.startBtn': '▶️ 启动相机',
+        'ar.scanBtn': '🔍 扫描物体',
+        'ar.stopBtn': '⏹️ 停止相机',
+        'ar.tipsTitle': '💡 提示：',
+        'ar.tip1': '将相机对准感兴趣的物体',
+        'ar.tip2': '点击"扫描物体"进行识别',
+        'ar.tip3': '光线充足时效果更好',
+        'ar.scanning': '🔍 正在扫描物体...',
+        // 错误
+        'errors.cityRequired': '请输入城市名称',
+        'errors.daysRange': '天数必须在1到14之间',
+        'errors.routeFailed': '无法创建路线',
+        'errors.refineFailed': '无法更新',
+        'errors.refineEmpty': '请输入您的更改偏好',
+        'errors.cameraAccess': '无法访问相机。',
+        'errors.cameraDenied': '相机访问被拒绝。请在浏览器设置中允许访问。',
+        'errors.cameraNotFound': '未在此设备上找到相机。',
+        'errors.cameraBusy': '相机正被其他应用使用。',
+        'errors.cameraStart': '请先启动相机。',
+        'errors.imageCapture': '无法从相机捕获图像。',
+        'errors.recognition': '识别物体时出错。请重试。',
+        'errors.server': '服务器错误。',
+        // 复数
+        'days.one': '天',
+        'days.few': '天',
+        'days.many': '天'
+    }
+};
+
+/**
+ * Получить перевод по ключу
+ * @param {string} key - Ключ перевода
+ * @param {Object} [params] - Параметры для подстановки
+ * @returns {string}
+ */
+function t(key, params = {}) {
+    let text = translations[currentLanguage]?.[key] || translations['ru'][key] || key;
+    // Подстановка параметров {name}
+    Object.keys(params).forEach(param => {
+        text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+}
+
+/**
+ * Применить переводы к DOM элементам с data-i18n атрибутами
+ * @param {string} lang - Код языка
+ */
+function applyLanguageToDom(lang) {
+    // Переводим текстовое содержимое
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang]?.[key]) {
+            el.textContent = translations[lang][key];
+        }
+    });
+    // Переводим плейсхолдеры
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[lang]?.[key]) {
+            el.placeholder = translations[lang][key];
+        }
+    });
+}
+
+/**
+ * Установить язык интерфейса
+ * @param {string} lang - Код языка (ru, en, zh)
+ */
+function setLanguage(lang) {
+    if (!['ru', 'en', 'zh'].includes(lang)) return;
+    
+    currentLanguage = lang;
+    localStorage.setItem('travelHelperLanguage', lang);
+    applyLanguageToDom(lang);
+    
+    // Обновляем активную кнопку языка
+    document.querySelectorAll('.lang-switch-btn').forEach(btn => {
+        btn.classList.toggle('active-lang', btn.getAttribute('data-lang') === lang);
+    });
+}
+
+// ============================================
 // НАВИГАЦИЯ МЕЖДУ СТРАНИЦАМИ
 // ============================================
 
@@ -107,7 +381,7 @@ async function generateRoute() {
     // Валидация города
     const city = cityInput.value.trim();
     if (!city) {
-        showError('Пожалуйста, введите название города');
+        showError(t('errors.cityRequired'));
         cityInput.focus();
         return;
     }
@@ -115,7 +389,7 @@ async function generateRoute() {
     // Валидация количества дней
     const days = parseInt(daysInput.value) || 1;
     if (days < 1 || days > 14) {
-        showError('Количество дней должно быть от 1 до 14');
+        showError(t('errors.daysRange'));
         daysInput.focus();
         return;
     }
@@ -138,7 +412,8 @@ async function generateRoute() {
             body: JSON.stringify({
                 city: city,
                 days: days,
-                comment: comment
+                comment: comment,
+                language: currentLanguage
             })
         });
         
@@ -161,7 +436,7 @@ async function generateRoute() {
         
     } catch (error) {
         console.error('Ошибка генерации маршрута:', error);
-        showError(`Не удалось создать маршрут: ${error.message}`);
+        showError(`${t('errors.routeFailed')}: ${error.message}`);
     } finally {
         // Скрываем индикатор загрузки
         loadingIndicator.style.display = 'none';
@@ -273,11 +548,108 @@ function renderDayContent(dayIndex) {
     // Очищаем контейнер
     container.innerHTML = '';
     
+    // Создаём панель редактирования дня
+    const editPanel = document.createElement('div');
+    editPanel.className = 'day-edit-panel';
+    editPanel.innerHTML = `
+        <button class="day-edit-btn" data-day-index="${dayIndex}">✏️ Редактировать день</button>
+        <div class="day-edit-form" style="display: none;">
+            <textarea class="day-edit-comment" rows="3" placeholder="Опишите, что изменить в этом дне (например: добавить парк, заменить ресторан на кафе, больше мест для детей)..."></textarea>
+            <div class="day-edit-actions">
+                <button class="day-edit-apply-btn" data-day-index="${dayIndex}">✅ Применить изменения</button>
+                <button class="day-edit-cancel-btn">❌ Отмена</button>
+            </div>
+            <div class="day-edit-error" style="display: none;"></div>
+            <div class="day-edit-loading" style="display: none;">⏳ Обновляем маршрут для этого дня...</div>
+        </div>
+    `;
+    container.appendChild(editPanel);
+    
+    // Привязываем обработчики для этой панели
+    const editBtn = editPanel.querySelector('.day-edit-btn');
+    const editForm = editPanel.querySelector('.day-edit-form');
+    const applyBtn = editPanel.querySelector('.day-edit-apply-btn');
+    const cancelBtn = editPanel.querySelector('.day-edit-cancel-btn');
+    
+    editBtn.addEventListener('click', () => {
+        editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+        editForm.style.display = 'none';
+        editPanel.querySelector('.day-edit-comment').value = '';
+        editPanel.querySelector('.day-edit-error').style.display = 'none';
+    });
+    
+    applyBtn.addEventListener('click', () => refineDayHandler(dayIndex, editPanel));
+    
     // Создаём карточки для каждого места
     day.items.forEach(item => {
         const card = createRouteItemCard(item);
         container.appendChild(card);
     });
+}
+
+/**
+ * Обработчик уточнения дня через API
+ * @param {number} dayIndex - Индекс дня
+ * @param {HTMLElement} editPanel - Панель редактирования
+ */
+async function refineDayHandler(dayIndex, editPanel) {
+    const textarea = editPanel.querySelector('.day-edit-comment');
+    const errorDiv = editPanel.querySelector('.day-edit-error');
+    const loadingDiv = editPanel.querySelector('.day-edit-loading');
+    const applyBtn = editPanel.querySelector('.day-edit-apply-btn');
+    const editForm = editPanel.querySelector('.day-edit-form');
+    
+    const comment = textarea.value.trim();
+    if (!comment) {
+        errorDiv.textContent = t('errors.refineEmpty');
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // Скрываем ошибку, показываем загрузку
+    errorDiv.style.display = 'none';
+    loadingDiv.textContent = t('route.updating');
+    loadingDiv.style.display = 'block';
+    applyBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/refine-day`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                city: currentRoute.city,
+                totalDays: currentRoute.days.length,
+                dayIndex: dayIndex,
+                originalDayPlan: currentRoute.days[dayIndex],
+                userComment: comment,
+                language: currentLanguage
+            })
+        });
+        
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || t('errors.server'));
+        }
+        
+        const updatedDay = await response.json();
+        
+        // Обновляем маршрут в памяти
+        currentRoute.days[dayIndex] = updatedDay;
+        
+        // Перерисовываем только этот день
+        renderDayContent(dayIndex);
+        
+    } catch (err) {
+        console.error('Ошибка уточнения дня:', err);
+        errorDiv.textContent = `${t('errors.refineFailed')}: ${err.message}`;
+        errorDiv.style.display = 'block';
+    } finally {
+        loadingDiv.style.display = 'none';
+        applyBtn.disabled = false;
+    }
 }
 
 /**
@@ -297,13 +669,26 @@ function createRouteItemCard(item) {
     };
     const icon = icons[item.type] || '📍';
     
+    // Название места: ссылка на сайт или просто текст
+    const titleHtml = item.websiteUrl 
+        ? `<a href="${escapeHtml(item.websiteUrl)}" target="_blank" rel="noopener noreferrer" class="route-item-link">${escapeHtml(item.title)}</a>`
+        : escapeHtml(item.title);
+    
+    // Ссылка на Яндекс.Карты
+    const city = currentRoute ? currentRoute.city : '';
+    const mapsQuery = encodeURIComponent(city + ' ' + item.title);
+    const mapsUrl = `https://yandex.ru/maps/?text=${mapsQuery}`;
+    
     card.innerHTML = `
         <div class="route-item-icon">${icon}</div>
         <div class="route-item-content">
             ${item.time ? `<div class="route-item-time">🕐 ${item.time}</div>` : ''}
-            <div class="route-item-title">${escapeHtml(item.title)}</div>
+            <div class="route-item-title">${titleHtml}</div>
             <div class="route-item-description">${escapeHtml(item.description)}</div>
             ${item.address ? `<div class="route-item-address">📍 ${escapeHtml(item.address)}</div>` : ''}
+            <div class="route-item-maps">
+                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-link">🗺️ Открыть в Яндекс.Картах</a>
+            </div>
         </div>
     `;
     
@@ -343,8 +728,10 @@ async function startCamera() {
         return;
     }
 
+    // Clear previous state before starting camera
     if (info) {
         info.textContent = '';
+        info.classList.remove('error', 'success');
     }
 
     try {
@@ -363,17 +750,20 @@ async function startCamera() {
     } catch (err) {
         console.error('Unable to start camera', err);
         
-        let errorMessage = 'Не удалось получить доступ к камере.';
+        let errorMessage = t('errors.cameraAccess');
         if (err.name === 'NotAllowedError') {
-            errorMessage = 'Доступ к камере запрещён. Разрешите доступ в настройках браузера.';
+            errorMessage = t('errors.cameraDenied');
         } else if (err.name === 'NotFoundError') {
-            errorMessage = 'Камера не найдена на этом устройстве.';
+            errorMessage = t('errors.cameraNotFound');
         } else if (err.name === 'NotReadableError') {
-            errorMessage = 'Камера занята другим приложением.';
+            errorMessage = t('errors.cameraBusy');
         }
         
+        // Show error with bright red styling
         if (info) {
             info.textContent = errorMessage;
+            info.classList.remove('success');
+            info.classList.add('error');
         }
     }
 }
@@ -386,6 +776,7 @@ function stopCamera() {
     const startBtn = document.getElementById('startCameraBtn');
     const scanBtn = document.getElementById('scanObjectBtn');
     const stopBtn = document.getElementById('stopCameraBtn');
+    const info = document.getElementById('arObjectInfo');
 
     if (cameraStream) {
         cameraStream.getTracks().forEach(track => track.stop());
@@ -400,6 +791,12 @@ function stopCamera() {
         scanBtn.disabled = true;
         stopBtn.disabled = true;
     }
+    
+    // Reset info block to neutral state
+    if (info) {
+        info.textContent = '';
+        info.classList.remove('error', 'success');
+    }
 }
 
 /**
@@ -411,12 +808,18 @@ async function scanObject() {
     const info = document.getElementById('arObjectInfo');
 
     if (!video || !info) return;
+    
+    // Check if camera is running
     if (!cameraStream) {
-        info.textContent = 'Сначала запустите камеру.';
+        info.textContent = t('errors.cameraStart');
+        info.classList.remove('success');
+        info.classList.add('error');
         return;
     }
 
-    info.textContent = '🔍 Сканирование объекта...';
+    // Reset classes and show scanning state
+    info.textContent = t('ar.scanning');
+    info.classList.remove('error', 'success');
 
     try {
         // Capture current video frame into a canvas
@@ -432,7 +835,9 @@ async function scanObject() {
         );
 
         if (!blob) {
-            info.textContent = 'Не удалось получить изображение с камеры.';
+            info.textContent = t('errors.imageCapture');
+            info.classList.remove('success');
+            info.classList.add('error');
             return;
         }
 
@@ -447,7 +852,9 @@ async function scanObject() {
         if (!response.ok) {
             const errText = await response.text();
             console.error('recognize-object error', errText);
-            info.textContent = 'Ошибка при распознавании объекта. Попробуйте еще раз.';
+            info.textContent = t('errors.recognition');
+            info.classList.remove('success');
+            info.classList.add('error');
             return;
         }
 
@@ -455,13 +862,18 @@ async function scanObject() {
         const title = result.title || 'Объект';
         const description = result.description || '';
 
+        // Success! Show result with green styling
+        info.classList.remove('error');
+        info.classList.add('success');
         info.innerHTML = `
             <h2>${escapeHtml(title)}</h2>
             <p>${escapeHtml(description)}</p>
         `;
     } catch (err) {
         console.error('scanObject failed', err);
-        info.textContent = 'Произошла ошибка при обращении к серверу.';
+        info.textContent = t('errors.server');
+        info.classList.remove('success');
+        info.classList.add('error');
     }
 }
 
@@ -471,11 +883,32 @@ async function scanObject() {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-    // Проверяем, какая страница загружена
-    const isARPage = document.querySelector('.ar-background');
+    // ========================================
+    // Инициализация языка (на всех страницах)
+    // ========================================
+    const savedLang = localStorage.getItem('travelHelperLanguage');
+    if (savedLang && ['ru', 'en', 'zh'].includes(savedLang)) {
+        currentLanguage = savedLang;
+    } else {
+        currentLanguage = 'ru';
+    }
+    setLanguage(currentLanguage);
     
+    // Подключаем переключатели языка
+    document.querySelectorAll('.lang-switch-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            if (lang && ['ru', 'en', 'zh'].includes(lang)) {
+                setLanguage(lang);
+            }
+        });
+    });
+    
+    // ========================================
+    // AR страница
+    // ========================================
+    const isARPage = document.querySelector('.ar-background');
     if (isARPage) {
-        // На AR странице подключаем обработчики кнопок
         const startBtn = document.getElementById('startCameraBtn');
         const scanBtn = document.getElementById('scanObjectBtn');
         const stopBtn = document.getElementById('stopCameraBtn');
@@ -487,7 +920,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return; // На AR странице не нужна дополнительная инициализация
     }
     
-    // На главной странице (index.html) показываем домашнюю страницу
+    // ========================================
+    // Главная страница (index.html)
+    // ========================================
     const homePage = document.getElementById('page-home');
     if (homePage) {
         // Скрываем навбар на главной странице
@@ -501,6 +936,38 @@ document.addEventListener('DOMContentLoaded', () => {
             page.classList.remove('active');
         });
         homePage.classList.add('active');
+    }
+    
+    // Подключаем кнопку сохранения в PDF
+    const savePdfBtn = document.getElementById('savePdfBtn');
+    if (savePdfBtn) {
+        savePdfBtn.addEventListener('click', () => {
+            window.print();
+        });
+    }
+    
+    // Подключаем кнопку "Назад" в навбаре
+    const navBackBtn = document.getElementById('navBackBtn');
+    if (navBackBtn) {
+        navBackBtn.addEventListener('click', () => {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                goHome();
+            }
+        });
+    }
+    
+    // Подключаем кнопку "Назад" на странице маршрута (если есть отдельная)
+    const routeBackBtn = document.getElementById('routeBackBtn');
+    if (routeBackBtn) {
+        routeBackBtn.addEventListener('click', () => {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
     }
 });
 

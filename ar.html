@@ -10,8 +10,13 @@
 <body>
     <!-- Навигационная панель -->
     <nav class="nav-bar">
-        <button class="nav-btn" onclick="window.history.back()">← Назад</button>
-        <button class="nav-btn nav-btn-home" onclick="window.location.href='index.html'">🏠 Главная</button>
+        <button class="nav-btn" onclick="window.history.back()" data-i18n="nav.back">← Назад</button>
+        <button class="nav-btn nav-btn-home" onclick="window.location.href='index.html'" data-i18n="nav.home">🏠 Главная</button>
+        <div class="lang-switcher">
+            <button class="lang-switch-btn active-lang" data-lang="ru">RU</button>
+            <button class="lang-switch-btn" data-lang="en">EN</button>
+            <button class="lang-switch-btn" data-lang="zh">中文</button>
+        </div>
     </nav>
 
     <!-- AR СТРАНИЦА -->
@@ -20,8 +25,8 @@
             <!-- AR Section -->
             <section class="ar-section">
                 <div class="ar-header">
-                    <h1>📷 AR-экскурсия</h1>
-                    <p>Наведите камеру на достопримечательность и нажмите «Сканировать объект».</p>
+                    <h1 data-i18n="ar.title">📷 AR Распознавание объектов</h1>
+                    <p data-i18n="ar.subtitle">Наведите камеру на достопримечательность, и мы попробуем её распознать с помощью Yandex Vision API.</p>
                 </div>
                 
                 <!-- Контейнер камеры -->
@@ -31,9 +36,9 @@
                 
                 <!-- Кнопки управления -->
                 <div class="ar-controls camera-controls">
-                    <button id="startCameraBtn" class="camera-btn start-camera-btn">📷 Запустить камеру</button>
-                    <button id="scanObjectBtn" class="camera-btn" disabled>🔍 Сканировать объект</button>
-                    <button id="stopCameraBtn" class="camera-btn stop-camera-btn" disabled>⏹ Остановить камеру</button>
+                    <button id="startCameraBtn" class="camera-btn start-camera-btn" data-i18n="ar.startBtn">▶️ Запустить камеру</button>
+                    <button id="scanObjectBtn" class="camera-btn" disabled data-i18n="ar.scanBtn">🔍 Сканировать объект</button>
+                    <button id="stopCameraBtn" class="camera-btn stop-camera-btn" disabled data-i18n="ar.stopBtn">⏹️ Остановить камеру</button>
                 </div>
                 
                 <!-- Информация о распознанном объекте -->
@@ -42,13 +47,11 @@
             
             <!-- Подсказки по использованию -->
             <div class="ar-tips">
-                <h3>💡 Как пользоваться AR камерой:</h3>
+                <h3 data-i18n="ar.tipsTitle">💡 Советы:</h3>
                 <ul>
-                    <li>Нажмите "Запустить камеру" и разрешите доступ к камере</li>
-                    <li>Наведите камеру на интересующий объект</li>
-                    <li>Нажмите "Сканировать объект" для распознавания</li>
-                    <li>Информация об объекте появится ниже</li>
-                    <li>Для мобильных устройств используется задняя камера</li>
+                    <li data-i18n="ar.tip1">Направьте камеру на интересующий объект</li>
+                    <li data-i18n="ar.tip2">Нажмите "Сканировать объект" для распознавания</li>
+                    <li data-i18n="ar.tip3">Функция работает лучше при хорошем освещении</li>
                 </ul>
                 
                 <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
