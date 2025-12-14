@@ -13,6 +13,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer');
+const upload = multer();
 
 // Загрузка переменных окружения из .env файла
 require('dotenv').config();
@@ -358,6 +360,98 @@ app.get('/api/health', (req, res) => {
  */
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// ============================================
+// YANDEX VISION: РАСПОЗНАВАНИЕ ОБЪЕКТОВ
+// ============================================
+
+/**
+ * POST /api/recognize-object
+ * Распознаёт объект на изображении с помощью Yandex Vision API
+ */
+app.post('/api/recognize-object', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ error: 'No image uploaded' });
+    }
+
+    const apiKey = process.env.YANDEX_API_KEY;
+    const folderId = process.env.YANDEX_FOLDER_ID;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: 'YANDEX_API_KEY is not configured on the server' });
+    }
+
+    // Convert image to base64
+    const imageBase64 = req.file.buffer.toString('base64');
+
+    const requestBody = {
+      folderId,
+      analyze_specs: [
+        {
+          content: imageBase64,
+          features: [
+            {
+              type: 'CLASSIFICATION'
+              // no extra config: use default classification model
+            }
+          ]
+        }
+      ]
+    };
+
+    const visionResponse = await fetch(
+      'https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Api-Key ${apiKey}`
+        },
+        body: JSON.stringify(requestBody)
+      }
+    );
+
+    const visionJson = await visionResponse.json();
+
+    if (!visionResponse.ok) {
+      console.error('Yandex Vision API error:', visionJson);
+      return res.status(visionResponse.status).json({
+        error: 'Vision API error',
+        details: visionJson
+      });
+    }
+
+    // Try to extract the most probable class label
+    let title = 'Объект не распознан';
+    let labels = [];
+    const firstResult = visionJson.results?.[0];
+    const featureResults = firstResult?.results || firstResult?.analysis_results;
+
+    if (Array.isArray(featureResults) && featureResults.length > 0) {
+      const classAnnotations =
+        featureResults[0].classification || featureResults[0].classifications;
+
+      const classes = classAnnotations?.classes || classAnnotations?.[0]?.classes;
+      if (Array.isArray(classes) && classes.length > 0) {
+        labels = classes.map(c => c.name);
+        title = classes[0].name;
+      }
+    }
+
+    res.json({
+      title,
+      labels,
+      description:
+        labels.length > 0
+          ? `Похоже, что это: ${labels.join(', ')}.`
+          : 'К сожалению, сервис не смог распознать объект. Попробуйте подойти ближе или изменить ракурс.'
+    });
+  } catch (err) {
+    console.error('recognize-object error', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // ============================================

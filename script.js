@@ -43,9 +43,6 @@ let currentRoute = null;
 /** @type {number} */
 let activeDay = 0;
 
-/** @type {MediaStream | null} */
-let cameraStream = null;
-
 // URL бэкенд-сервера (автоматически переключается между localhost и Render)
 const API_BASE =
   location.hostname === 'localhost'
@@ -325,110 +322,59 @@ function escapeHtml(text) {
 }
 
 // ============================================
-// AR КАМЕРА - ФУНКЦИИ
+// AR КАМЕРА - РЕАЛЬНОЕ РАСПОЗНАВАНИЕ С YANDEX VISION
 // ============================================
 
-/**
- * Словарь AR объектов для демонстрации
- * В реальном проекте это будет заполняться на основе данных маршрута
- * или результатов распознавания изображений
- */
-const AR_OBJECTS = {
-    '🏛': {
-        name: 'Архитектурный памятник',
-        description: 'Здание построено в 1928 году в стиле советского конструктивизма. Является объектом культурного наследия.'
-    },
-    '🌳': {
-        name: 'Старый дуб',
-        description: 'Возраст дерева более 150 лет. Охраняется государством как памятник природы.'
-    },
-    '🦆': {
-        name: 'Городской пруд',
-        description: 'Популярное место отдыха горожан. Здесь можно покормить уток и насладиться природой.'
-    },
-    '🗿': {
-        name: 'Скульптура',
-        description: 'Современная городская скульптура. Установлена в 2015 году к юбилею города.'
-    }
-};
+/** @type {MediaStream | null} */
+let cameraStream = null;
 
 /**
  * Запуск камеры с использованием getUserMedia API
  * Использует заднюю камеру на мобильных устройствах
  */
 async function startCamera() {
-    const cameraPreview = document.querySelector('.camera-preview');
-    const startBtn = document.querySelector('.start-camera-btn');
-    const stopBtn = document.querySelector('.stop-camera-btn');
-    
-    // Проверяем поддержку камеры
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        showCameraError('Камера не поддерживается в этом браузере');
+    const video = document.getElementById('cameraVideo');
+    const startBtn = document.getElementById('startCameraBtn');
+    const scanBtn = document.getElementById('scanObjectBtn');
+    const stopBtn = document.getElementById('stopCameraBtn');
+    const info = document.getElementById('arObjectInfo');
+
+    if (!video || !startBtn || !scanBtn || !stopBtn) {
         return;
     }
-    
+
+    if (info) {
+        info.textContent = '';
+    }
+
     try {
-        // Запрашиваем доступ к камере
-        // facingMode: 'environment' выбирает заднюю камеру на телефоне
-        cameraStream = await navigator.mediaDevices.getUserMedia({
+        cameraStream = await navigator.mediaDevices.getUserMedia({ 
             video: {
-                facingMode: 'environment',
+                facingMode: 'environment', // Задняя камера на мобильных
                 width: { ideal: 1280 },
                 height: { ideal: 720 }
             }
         });
-        
-        // Создаём интерфейс с видео и маркерами
-        cameraPreview.innerHTML = `
-            <video class="camera-video" autoplay playsinline muted></video>
-            <div class="camera-viewfinder"></div>
-            <div class="object-marker" data-icon="🏛" onclick="onMarkerClick('🏛')">🏛</div>
-            <div class="object-marker" data-icon="🌳" onclick="onMarkerClick('🌳')">🌳</div>
-            <div class="object-marker" data-icon="🦆" onclick="onMarkerClick('🦆')">🦆</div>
-            <div class="object-marker" data-icon="🗿" onclick="onMarkerClick('🗿')">🗿</div>
-            <div class="scan-overlay">
-                <div class="scan-dot"></div>
-                🔍 Нажмите на объект для информации
-            </div>
-        `;
-        
-        // Подключаем видео поток к элементу video
-        const video = cameraPreview.querySelector('.camera-video');
         video.srcObject = cameraStream;
+
+        startBtn.disabled = true;
+        scanBtn.disabled = false;
+        stopBtn.disabled = false;
+    } catch (err) {
+        console.error('Unable to start camera', err);
         
-        // Ждём загрузки метаданных видео и запускаем воспроизведение
-        video.onloadedmetadata = () => {
-            video.play().catch(err => {
-                console.error('Ошибка воспроизведения видео:', err);
-            });
-        };
-        
-        // Обновляем состояние кнопок
-        if (startBtn) startBtn.disabled = true;
-        if (stopBtn) stopBtn.disabled = false;
-        
-        // TODO: Здесь можно добавить интеграцию с реальным распознаванием объектов
-        // Пример реализации:
-        // 1. Захватить кадр из видео на canvas
-        // 2. Отправить изображение на бэкенд (например, Yandex Vision API)
-        // 3. Получить результаты распознавания
-        // 4. Вызвать showObjectInfo с полученными данными
-        
-    } catch (error) {
-        console.error('Ошибка доступа к камере:', error);
-        
-        // Определяем причину ошибки
-        let errorMessage = 'Не удалось получить доступ к камере';
-        
-        if (error.name === 'NotAllowedError') {
+        let errorMessage = 'Не удалось получить доступ к камере.';
+        if (err.name === 'NotAllowedError') {
             errorMessage = 'Доступ к камере запрещён. Разрешите доступ в настройках браузера.';
-        } else if (error.name === 'NotFoundError') {
+        } else if (err.name === 'NotFoundError') {
             errorMessage = 'Камера не найдена на этом устройстве.';
-        } else if (error.name === 'NotReadableError') {
+        } else if (err.name === 'NotReadableError') {
             errorMessage = 'Камера занята другим приложением.';
         }
         
-        showCameraError(errorMessage);
+        if (info) {
+            info.textContent = errorMessage;
+        }
     }
 }
 
@@ -436,167 +382,87 @@ async function startCamera() {
  * Остановка камеры и освобождение ресурсов
  */
 function stopCamera() {
-    const cameraPreview = document.querySelector('.camera-preview');
-    const startBtn = document.querySelector('.start-camera-btn');
-    const stopBtn = document.querySelector('.stop-camera-btn');
-    
-    // Останавливаем все треки медиа-потока
+    const video = document.getElementById('cameraVideo');
+    const startBtn = document.getElementById('startCameraBtn');
+    const scanBtn = document.getElementById('scanObjectBtn');
+    const stopBtn = document.getElementById('stopCameraBtn');
+
     if (cameraStream) {
-        cameraStream.getTracks().forEach(track => {
-            track.stop();
-        });
+        cameraStream.getTracks().forEach(track => track.stop());
         cameraStream = null;
     }
-    
-    // Возвращаем начальный интерфейс
-    cameraPreview.innerHTML = `
-        <div style="font-size: 50px;">📷</div>
-        <div style="margin-top: 20px; color: #4CAF50; font-weight: bold;">
-            Нажмите "Запустить камеру" для начала сканирования
-        </div>
-    `;
-    
-    // Обновляем состояние кнопок
-    if (startBtn) startBtn.disabled = false;
-    if (stopBtn) stopBtn.disabled = true;
-    
-    // Скрываем информационную панель, если она была открыта
-    const objectInfo = document.querySelector('.object-info');
-    if (objectInfo) {
-        objectInfo.remove();
+    if (video) {
+        video.srcObject = null;
+    }
+
+    if (startBtn && scanBtn && stopBtn) {
+        startBtn.disabled = false;
+        scanBtn.disabled = true;
+        stopBtn.disabled = true;
     }
 }
 
 /**
- * Обработчик клика на маркер объекта
- * @param {string} icon - Иконка (эмодзи) объекта
+ * Сканирование объекта с помощью Yandex Vision API
+ * Захватывает текущий кадр с камеры и отправляет на распознавание
  */
-function onMarkerClick(icon) {
-    const objectData = AR_OBJECTS[icon];
-    if (objectData) {
-        showObjectInfo(icon, objectData.name, objectData.description);
-    }
-}
+async function scanObject() {
+    const video = document.getElementById('cameraVideo');
+    const info = document.getElementById('arObjectInfo');
 
-/**
- * Показать информацию об объекте
- * @param {string} icon - Иконка объекта
- * @param {string} name - Название объекта
- * @param {string} description - Описание объекта
- */
-function showObjectInfo(icon, name, description) {
-    const cameraPreview = document.querySelector('.camera-preview');
-    if (!cameraPreview) return;
-    
-    // Удаляем предыдущую информационную панель, если есть
-    let objectInfo = cameraPreview.querySelector('.object-info');
-    if (objectInfo) {
-        objectInfo.remove();
+    if (!video || !info) return;
+    if (!cameraStream) {
+        info.textContent = 'Сначала запустите камеру.';
+        return;
     }
-    
-    // Создаём новую информационную панель
-    objectInfo = document.createElement('div');
-    objectInfo.className = 'object-info';
-    
-    objectInfo.innerHTML = `
-        <div class="object-info-icon">${icon}</div>
-        <div class="object-info-name">${escapeHtml(name)}</div>
-        <div class="object-info-description">${escapeHtml(description)}</div>
-    `;
-    
-    cameraPreview.appendChild(objectInfo);
-    
-    // Автоматически скрываем через 5 секунд
-    setTimeout(() => {
-        if (objectInfo && objectInfo.parentNode) {
-            objectInfo.style.opacity = '0';
-            objectInfo.style.transition = 'opacity 0.3s ease';
-            setTimeout(() => objectInfo.remove(), 300);
+
+    info.textContent = '🔍 Сканирование объекта...';
+
+    try {
+        // Capture current video frame into a canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Convert canvas to blob
+        const blob = await new Promise(resolve =>
+            canvas.toBlob(resolve, 'image/jpeg', 0.9)
+        );
+
+        if (!blob) {
+            info.textContent = 'Не удалось получить изображение с камеры.';
+            return;
         }
-    }, 5000);
-}
 
-/**
- * Показать сообщение об ошибке камеры
- * @param {string} message - Текст ошибки
- */
-function showCameraError(message) {
-    const cameraPreview = document.querySelector('.camera-preview');
-    if (cameraPreview) {
-        cameraPreview.innerHTML = `
-            <div class="camera-not-supported">
-                <div style="font-size: 50px; margin-bottom: 15px;">⚠️</div>
-                <h3>${escapeHtml(message)}</h3>
-                <p style="opacity: 0.7; margin-top: 10px;">
-                    Попробуйте открыть сайт на мобильном устройстве или в другом браузере
-                </p>
-            </div>
+        const formData = new FormData();
+        formData.append('image', blob, 'frame.jpg');
+
+        const response = await fetch(`${API_BASE}/api/recognize-object`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error('recognize-object error', errText);
+            info.textContent = 'Ошибка при распознавании объекта. Попробуйте еще раз.';
+            return;
+        }
+
+        const result = await response.json();
+        const title = result.title || 'Объект';
+        const description = result.description || '';
+
+        info.innerHTML = `
+            <h2>${escapeHtml(title)}</h2>
+            <p>${escapeHtml(description)}</p>
         `;
+    } catch (err) {
+        console.error('scanObject failed', err);
+        info.textContent = 'Произошла ошибка при обращении к серверу.';
     }
-    
-    // Блокируем кнопки
-    const startBtn = document.querySelector('.start-camera-btn');
-    if (startBtn) startBtn.disabled = true;
-}
-
-/**
- * Проверка поддержки камеры при загрузке AR страницы
- */
-function checkCameraSupport() {
-    const startBtn = document.querySelector('.start-camera-btn');
-    
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        showCameraError('Ваш браузер не поддерживает доступ к камере');
-        if (startBtn) startBtn.disabled = true;
-        return false;
-    }
-    
-    return true;
-}
-
-// TODO: Функция для интеграции с реальным распознаванием объектов
-// В будущем можно добавить:
-/**
- * Захват кадра для распознавания
- * @returns {string | null} - Base64 изображение или null при ошибке
- */
-function captureFrame() {
-    const video = document.querySelector('.camera-video');
-    if (!video) return null;
-    
-    // Создаём canvas для захвата кадра
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
-    
-    // Возвращаем изображение в формате base64
-    return canvas.toDataURL('image/jpeg', 0.8);
-}
-
-// TODO: Отправка изображения на сервер для распознавания
-/**
- * Отправить кадр на распознавание (заглушка для будущей реализации)
- * @param {string} imageBase64 - Изображение в формате base64
- */
-async function recognizeImage(imageBase64) {
-    // В будущем здесь будет вызов API для распознавания изображений
-    // Например, Yandex Vision API или другой сервис
-    
-    // Пример запроса:
-    // const response = await fetch(`${API_BASE}/api/recognize`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ image: imageBase64 })
-    // });
-    // const result = await response.json();
-    // if (result.objects && result.objects.length > 0) {
-    //     showObjectInfo(result.objects[0].icon, result.objects[0].name, result.objects[0].description);
-    // }
-    
-    console.log('TODO: Implement image recognition');
 }
 
 // ============================================
@@ -609,8 +475,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const isARPage = document.querySelector('.ar-background');
     
     if (isARPage) {
-        // На AR странице проверяем поддержку камеры
-        checkCameraSupport();
+        // На AR странице подключаем обработчики кнопок
+        const startBtn = document.getElementById('startCameraBtn');
+        const scanBtn = document.getElementById('scanObjectBtn');
+        const stopBtn = document.getElementById('stopCameraBtn');
+
+        if (startBtn) startBtn.addEventListener('click', startCamera);
+        if (scanBtn) scanBtn.addEventListener('click', scanObject);
+        if (stopBtn) stopBtn.addEventListener('click', stopCamera);
+        
         return; // На AR странице не нужна дополнительная инициализация
     }
     
