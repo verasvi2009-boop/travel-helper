@@ -43,6 +43,9 @@ let currentRoute = null;
 /** @type {number} */
 let activeDay = 0;
 
+/** @type {Object | null} - Последний запрос на генерацию маршрута (для пересоздания на другом языке) */
+let lastRouteRequest = null;
+
 // URL бэкенд-сервера (автоматически переключается между localhost и Render)
 const API_BASE =
   location.hostname === 'localhost'
@@ -98,6 +101,8 @@ const translations = {
         'route.openMaps': '🗺️ Открыть в Яндекс.Картах',
         'route.arLink': '📷 Открыть AR камеру для осмотра',
         'route.updating': '⏳ Обновляем маршрут для этого дня...',
+        'route.regenerateConfirm': 'Пересоздать маршрут на выбранном языке?\n\nВсе изменения текущего маршрута будут потеряны.',
+        'route.regenerating': '🔄 Пересоздаём маршрут на новом языке...',
         // AR страница
         'ar.title': 'AR Распознавание объектов',
         'ar.subtitle': 'Наведите камеру на достопримечательность, и мы попробуем её распознать с помощью Yandex Vision API.',
@@ -109,6 +114,14 @@ const translations = {
         'ar.tip2': 'Нажмите "Сканировать объект" для распознавания',
         'ar.tip3': 'Функция работает лучше при хорошем освещении',
         'ar.scanning': '🔍 Сканирование объекта...',
+        // AR результаты распознавания
+        'ar.objectRecognizedTitle': '✅ Объект распознан',
+        'ar.objectMaybeTitle': '🤔 Возможно, это',
+        'ar.objectNotRecognizedTitle': '❓ Объект не распознан',
+        'ar.objectErrorTitle': '❌ Ошибка сервиса',
+        'ar.confidenceLabel': 'Уверенность',
+        'ar.visionTagsLabel': 'Нейросеть видит',
+        'ar.notRecognizedHint': 'Попробуйте подойти ближе или изменить угол съёмки.',
         // Ошибки
         'errors.cityRequired': 'Пожалуйста, введите название города',
         'errors.daysRange': 'Количество дней должно быть от 1 до 14',
@@ -168,6 +181,8 @@ const translations = {
         'route.openMaps': '🗺️ Open in Yandex Maps',
         'route.arLink': '📷 Open AR camera for viewing',
         'route.updating': '⏳ Updating route for this day...',
+        'route.regenerateConfirm': 'Regenerate the route in the selected language?\n\nAll changes to the current route will be lost.',
+        'route.regenerating': '🔄 Regenerating route in new language...',
         // AR page
         'ar.title': 'AR Object Recognition',
         'ar.subtitle': 'Point the camera at a landmark, and we will try to recognize it using Yandex Vision API.',
@@ -179,6 +194,14 @@ const translations = {
         'ar.tip2': 'Press "Scan Object" to recognize',
         'ar.tip3': 'Works better in good lighting',
         'ar.scanning': '🔍 Scanning object...',
+        // AR recognition results
+        'ar.objectRecognizedTitle': '✅ Object recognized',
+        'ar.objectMaybeTitle': '🤔 This might be',
+        'ar.objectNotRecognizedTitle': '❓ Object not recognized',
+        'ar.objectErrorTitle': '❌ Service error',
+        'ar.confidenceLabel': 'Confidence',
+        'ar.visionTagsLabel': 'AI sees',
+        'ar.notRecognizedHint': 'Try getting closer or changing the angle.',
         // Errors
         'errors.cityRequired': 'Please enter a city name',
         'errors.daysRange': 'Number of days must be between 1 and 14',
@@ -238,6 +261,8 @@ const translations = {
         'route.openMaps': '🗺️ 在Yandex地图中打开',
         'route.arLink': '📷 打开AR相机查看',
         'route.updating': '⏳ 正在更新当天路线...',
+        'route.regenerateConfirm': '用所选语言重新生成路线？\n\n当前路线的所有更改都将丢失。',
+        'route.regenerating': '🔄 正在用新语言重新生成路线...',
         // AR页面
         'ar.title': 'AR物体识别',
         'ar.subtitle': '将相机对准地标，我们将尝试使用Yandex Vision API识别它。',
@@ -249,6 +274,14 @@ const translations = {
         'ar.tip2': '点击"扫描物体"进行识别',
         'ar.tip3': '光线充足时效果更好',
         'ar.scanning': '🔍 正在扫描物体...',
+        // AR识别结果
+        'ar.objectRecognizedTitle': '✅ 物体已识别',
+        'ar.objectMaybeTitle': '🤔 这可能是',
+        'ar.objectNotRecognizedTitle': '❓ 无法识别物体',
+        'ar.objectErrorTitle': '❌ 服务错误',
+        'ar.confidenceLabel': '置信度',
+        'ar.visionTagsLabel': 'AI识别到',
+        'ar.notRecognizedHint': '请尝试靠近或改变拍摄角度。',
         // 错误
         'errors.cityRequired': '请输入城市名称',
         'errors.daysRange': '天数必须在1到14之间',
@@ -313,6 +346,7 @@ function applyLanguageToDom(lang) {
 function setLanguage(lang) {
     if (!['ru', 'en', 'zh'].includes(lang)) return;
     
+    const previousLanguage = currentLanguage;
     currentLanguage = lang;
     localStorage.setItem('travelHelperLanguage', lang);
     applyLanguageToDom(lang);
@@ -321,6 +355,99 @@ function setLanguage(lang) {
     document.querySelectorAll('.lang-switch-btn').forEach(btn => {
         btn.classList.toggle('active-lang', btn.getAttribute('data-lang') === lang);
     });
+    
+    // Если мы на странице маршрута и язык изменился, предложить пересоздать маршрут
+    if (previousLanguage !== lang && isOnRoutePage() && lastRouteRequest && currentRoute) {
+        // Используем setTimeout чтобы UI успел обновиться
+        setTimeout(() => {
+            if (confirm(t('route.regenerateConfirm'))) {
+                regenerateRouteInNewLanguage();
+            }
+        }, 100);
+    }
+}
+
+/**
+ * Проверяет, находимся ли мы на странице маршрута
+ * @returns {boolean}
+ */
+function isOnRoutePage() {
+    const routePage = document.getElementById('page-route');
+    return routePage && routePage.classList.contains('active');
+}
+
+/**
+ * Пересоздаёт маршрут на новом языке с теми же параметрами
+ */
+async function regenerateRouteInNewLanguage() {
+    if (!lastRouteRequest) {
+        console.warn('No previous route request to regenerate');
+        return;
+    }
+    
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const routeContent = document.getElementById('routeContent');
+    const savePdfBtn = document.getElementById('savePdfBtn');
+    
+    // Показываем индикатор загрузки на странице маршрута
+    if (routeContent) {
+        routeContent.innerHTML = `
+            <div class="route-regenerating">
+                <div class="loading-spinner"></div>
+                <p>${t('route.regenerating')}</p>
+                <p class="loading-hint">${t('form.loadingHint')}</p>
+            </div>
+        `;
+    }
+    
+    // Отключаем кнопку PDF пока идёт загрузка
+    if (savePdfBtn) savePdfBtn.disabled = true;
+    
+    // Создаём новый запрос с текущим языком
+    const newRequestBody = { 
+        ...lastRouteRequest, 
+        language: currentLanguage 
+    };
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/generate-route`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newRequestBody)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Server error: ${response.status}`);
+        }
+        
+        const routeData = await response.json();
+        
+        // Обновляем сохранённый запрос и маршрут
+        lastRouteRequest = newRequestBody;
+        currentRoute = routeData;
+        activeDay = 0;
+        
+        // Перерисовываем маршрут
+        displayRoute();
+        
+    } catch (error) {
+        console.error('Error regenerating route:', error);
+        
+        // Показываем ошибку
+        if (routeContent) {
+            routeContent.innerHTML = `
+                <div class="route-error">
+                    <p>❌ ${t('errors.routeFailed')}: ${error.message}</p>
+                </div>
+            `;
+        }
+    } finally {
+        // Включаем кнопку PDF обратно
+        if (savePdfBtn) savePdfBtn.disabled = false;
+    }
 }
 
 // ============================================
@@ -402,6 +529,15 @@ async function generateRoute() {
     errorMessage.style.display = 'none';
     searchButton.disabled = true;
     
+    // Сохраняем параметры запроса для возможного пересоздания на другом языке
+    const requestBody = {
+        city: city,
+        days: days,
+        comment: comment,
+        language: currentLanguage
+    };
+    lastRouteRequest = { ...requestBody };
+    
     try {
         // Отправляем запрос на бэкенд
         const response = await fetch(`${API_BASE}/api/generate-route`, {
@@ -409,12 +545,7 @@ async function generateRoute() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                city: city,
-                days: days,
-                comment: comment,
-                language: currentLanguage
-            })
+            body: JSON.stringify(requestBody)
         });
         
         // Проверяем ответ
@@ -841,8 +972,10 @@ async function scanObject() {
             return;
         }
 
+        // Prepare form data with image and language
         const formData = new FormData();
         formData.append('image', blob, 'frame.jpg');
+        formData.append('language', currentLanguage);
 
         const response = await fetch(`${API_BASE}/api/recognize-object`, {
             method: 'POST',
@@ -859,16 +992,62 @@ async function scanObject() {
         }
 
         const result = await response.json();
-        const title = result.title || 'Объект';
-        const description = result.description || '';
-
-        // Success! Show result with green styling
-        info.classList.remove('error');
-        info.classList.add('success');
-        info.innerHTML = `
-            <h2>${escapeHtml(title)}</h2>
-            <p>${escapeHtml(description)}</p>
-        `;
+        
+        // Handle the new response format:
+        // { success, recognized, mode, title, description, confidence, rawTags }
+        
+        if (result.success === false || result.mode === 'error') {
+            // Server returned an error
+            info.classList.remove('success');
+            info.classList.add('error');
+            info.innerHTML = `
+                <h3>${t('ar.objectErrorTitle')}</h3>
+                <p>${escapeHtml(result.description || t('errors.recognition'))}</p>
+            `;
+            return;
+        }
+        
+        if (result.recognized) {
+            // Object was recognized
+            info.classList.remove('error');
+            info.classList.add('success');
+            
+            const confidencePercent = Math.round((result.confidence || 0) * 100);
+            const headerText = result.mode === 'vision+gpt' 
+                ? t('ar.objectMaybeTitle')
+                : t('ar.objectRecognizedTitle');
+            
+            let tagsHtml = '';
+            if (result.rawTags && result.rawTags.length > 0) {
+                const tagsPreview = result.rawTags.slice(0, 5).join(', ');
+                tagsHtml = `<p class="ar-tags"><small>${t('ar.visionTagsLabel')}: ${escapeHtml(tagsPreview)}</small></p>`;
+            }
+            
+            info.innerHTML = `
+                <h3>${headerText}</h3>
+                <h2>${escapeHtml(result.title || '')}</h2>
+                <p>${escapeHtml(result.description || '')}</p>
+                <p class="ar-confidence"><small>${t('ar.confidenceLabel')}: ~${confidencePercent}%</small></p>
+                ${tagsHtml}
+            `;
+        } else {
+            // Object was NOT recognized
+            info.classList.remove('success');
+            info.classList.add('error');
+            
+            let tagsHtml = '';
+            if (result.rawTags && result.rawTags.length > 0) {
+                const tagsPreview = result.rawTags.slice(0, 5).join(', ');
+                tagsHtml = `<p class="ar-tags"><small>${t('ar.visionTagsLabel')}: ${escapeHtml(tagsPreview)}</small></p>`;
+            }
+            
+            info.innerHTML = `
+                <h3>${t('ar.objectNotRecognizedTitle')}</h3>
+                <p>${escapeHtml(result.description || t('ar.notRecognizedHint'))}</p>
+                ${tagsHtml}
+            `;
+        }
+        
     } catch (err) {
         console.error('scanObject failed', err);
         info.textContent = t('errors.server');

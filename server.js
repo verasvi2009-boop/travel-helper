@@ -403,92 +403,359 @@ app.get('/', (req, res) => {
 // YANDEX VISION: РАСПОЗНАВАНИЕ ОБЪЕКТОВ
 // ============================================
 
+// Пороги уверенности для Vision
+const VISION_GOOD_THRESHOLD = 0.65;  // Высокая уверенность
+const VISION_MIN_THRESHOLD = 0.35;   // Минимальная уверенность для попытки GPT
+
+// Общие/неинформативные теги, при которых нужно вызвать GPT
+const GENERIC_TAGS = ['building', 'tower', 'city', 'tree', 'sky', 'outdoor', 'indoor', 'object', 'architecture', 'structure', 'landscape'];
+
+/**
+ * Локализованные сообщения для AR распознавания
+ */
+const AR_MESSAGES = {
+    ru: {
+        notRecognized: 'Объект не распознан',
+        notRecognizedDesc: 'К сожалению, сервис не смог распознать объект. Попробуйте подойти ближе или изменить ракурс.',
+        errorTitle: 'Ошибка',
+        errorDesc: 'Не удалось распознать объект. Попробуйте ещё раз позже.',
+        noImage: 'Изображение не загружено',
+        serverNotConfigured: 'Сервер не настроен'
+    },
+    en: {
+        notRecognized: 'Object not recognized',
+        notRecognizedDesc: 'Unfortunately, the service could not recognize the object. Try getting closer or changing the angle.',
+        errorTitle: 'Error',
+        errorDesc: 'Could not recognize the object. Please try again later.',
+        noImage: 'No image uploaded',
+        serverNotConfigured: 'Server not configured'
+    },
+    zh: {
+        notRecognized: '无法识别对象',
+        notRecognizedDesc: '抱歉，服务无法识别该对象。请尝试靠近或改变角度。',
+        errorTitle: '错误',
+        errorDesc: '无法识别对象。请稍后再试。',
+        noImage: '未上传图片',
+        serverNotConfigured: '服务器未配置'
+    }
+};
+
+/**
+ * Извлекает теги и оценки уверенности из ответа Yandex Vision
+ * @param {Object} visionJson - Ответ от Yandex Vision API
+ * @returns {{ bestLabel: string, bestScore: number, tags: string[], allClasses: Array<{name: string, confidence: number}> }}
+ */
+function extractVisionTags(visionJson) {
+    let bestLabel = '';
+    let bestScore = 0;
+    let tags = [];
+    let allClasses = [];
+    
+    try {
+        const firstResult = visionJson.results?.[0];
+        const featureResults = firstResult?.results || firstResult?.analysis_results;
+        
+        if (Array.isArray(featureResults) && featureResults.length > 0) {
+            const classAnnotations = featureResults[0].classification || featureResults[0].classifications;
+            const classes = classAnnotations?.classes || classAnnotations?.[0]?.classes;
+            
+            if (Array.isArray(classes) && classes.length > 0) {
+                // Сортируем по уверенности
+                allClasses = classes
+                    .map(c => ({ name: c.name || '', confidence: parseFloat(c.confidence) || 0 }))
+                    .sort((a, b) => b.confidence - a.confidence);
+                
+                // Лучший результат
+                bestLabel = allClasses[0].name;
+                bestScore = allClasses[0].confidence;
+                
+                // Топ-10 тегов (только имена)
+                tags = allClasses.slice(0, 10).map(c => c.name);
+            }
+        }
+    } catch (e) {
+        console.error('[extractVisionTags] Error:', e);
+    }
+    
+    return { bestLabel, bestScore, tags, allClasses };
+}
+
+/**
+ * Проверяет, является ли тег слишком общим/неинформативным
+ * @param {string} label - Название тега
+ * @returns {boolean}
+ */
+function isGenericTag(label) {
+    if (!label) return true;
+    const lower = label.toLowerCase();
+    return GENERIC_TAGS.some(g => lower.includes(g));
+}
+
+/**
+ * Использует Yandex GPT для описания объекта на основе тегов Vision
+ * @param {string[]} tags - Теги от Vision
+ * @param {string} language - Язык ответа (ru, en, zh)
+ * @returns {Promise<{ title: string, description: string, canGuess: boolean }>}
+ */
+async function describeObjectWithYandexGPT(tags, language = 'ru') {
+    const langInstructions = {
+        ru: 'Отвечай на русском языке.',
+        en: 'Answer in English.',
+        zh: '请用中文回答。'
+    };
+    
+    const langInstruction = langInstructions[language] || langInstructions.ru;
+    
+    const systemPrompt = `You are a knowledgeable tour guide who can identify landmarks and objects.
+Your task: based on image classification tags, guess what landmark or object this might be.
+${langInstruction}
+
+RULES:
+1. Return ONLY valid JSON, no extra text
+2. If tags suggest a famous landmark (like Eiffel Tower, Kremlin, etc.), identify it
+3. If tags are too vague, set canGuess to false
+4. Keep title short (2-4 words)
+5. Keep description brief (1-3 sentences)`;
+
+    const userPrompt = `Image classification tags: ${tags.join(', ')}
+
+Based on these tags, try to identify what landmark or object this might be.
+
+Return JSON ONLY:
+{
+  "title": "Short name of object (2-4 words)",
+  "description": "Brief description for a tourist (1-3 sentences)",
+  "canGuess": true or false
+}
+
+If the tags are too generic or you cannot make a reasonable guess, set canGuess to false and explain in description that the image is unclear.
+
+IMPORTANT: ${langInstruction}`;
+
+    try {
+        const response = await fetch(YANDEX_GPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Api-Key ${YANDEX_API_KEY}`,
+                'x-folder-id': YANDEX_FOLDER_ID
+            },
+            body: JSON.stringify({
+                modelUri: YANDEX_MODEL,
+                completionOptions: {
+                    stream: false,
+                    temperature: 0.4,
+                    maxTokens: 500
+                },
+                messages: [
+                    { role: 'system', text: systemPrompt },
+                    { role: 'user', text: userPrompt }
+                ]
+            })
+        });
+        
+        if (!response.ok) {
+            console.error('[describeObjectWithYandexGPT] GPT API error:', response.status);
+            return { title: '', description: '', canGuess: false };
+        }
+        
+        const data = await response.json();
+        const resultText = data.result?.alternatives?.[0]?.message?.text;
+        
+        if (!resultText) {
+            return { title: '', description: '', canGuess: false };
+        }
+        
+        // Парсим JSON из ответа
+        const cleanText = resultText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+        
+        if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            return {
+                title: parsed.title || '',
+                description: parsed.description || '',
+                canGuess: parsed.canGuess === true
+            };
+        }
+        
+        return { title: '', description: '', canGuess: false };
+        
+    } catch (err) {
+        console.error('[describeObjectWithYandexGPT] Error:', err);
+        return { title: '', description: '', canGuess: false };
+    }
+}
+
 /**
  * POST /api/recognize-object
  * Распознаёт объект на изображении с помощью Yandex Vision API
+ * При низкой уверенности использует Yandex GPT для улучшения результата
  */
 app.post('/api/recognize-object', upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file || !req.file.buffer) {
-      return res.status(400).json({ error: 'No image uploaded' });
+    // Нормализуем язык (по умолчанию русский)
+    let language = req.body.language;
+    if (!['ru', 'en', 'zh'].includes(language)) {
+        language = 'ru';
     }
-
-    const apiKey = process.env.YANDEX_API_KEY;
-    const folderId = process.env.YANDEX_FOLDER_ID;
-
-    if (!apiKey) {
-      return res.status(500).json({ error: 'YANDEX_API_KEY is not configured on the server' });
-    }
-
-    // Convert image to base64
-    const imageBase64 = req.file.buffer.toString('base64');
-
-    const requestBody = {
-      folderId,
-      analyze_specs: [
-        {
-          content: imageBase64,
-          features: [
-            {
-              type: 'CLASSIFICATION'
-              // no extra config: use default classification model
-            }
-          ]
+    
+    const messages = AR_MESSAGES[language] || AR_MESSAGES.ru;
+    
+    try {
+        // Проверяем наличие изображения
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).json({
+                success: false,
+                recognized: false,
+                mode: 'error',
+                title: messages.noImage,
+                description: messages.noImage,
+                confidence: 0,
+                rawTags: []
+            });
         }
-      ]
-    };
-
-    const visionResponse = await fetch(
-      'https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Api-Key ${apiKey}`
-        },
-        body: JSON.stringify(requestBody)
-      }
-    );
-
-    const visionJson = await visionResponse.json();
-
-    if (!visionResponse.ok) {
-      console.error('Yandex Vision API error:', visionJson);
-      return res.status(visionResponse.status).json({
-        error: 'Vision API error',
-        details: visionJson
-      });
+        
+        // Проверяем конфигурацию сервера
+        if (!YANDEX_API_KEY || !YANDEX_FOLDER_ID) {
+            return res.status(500).json({
+                success: false,
+                recognized: false,
+                mode: 'error',
+                title: messages.serverNotConfigured,
+                description: messages.serverNotConfigured,
+                confidence: 0,
+                rawTags: []
+            });
+        }
+        
+        console.log(`[recognize-object] Начало распознавания, язык: ${language}`);
+        
+        // Конвертируем изображение в base64
+        const imageBase64 = req.file.buffer.toString('base64');
+        
+        // Вызываем Yandex Vision API
+        const visionResponse = await fetch(
+            'https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Api-Key ${YANDEX_API_KEY}`
+                },
+                body: JSON.stringify({
+                    folderId: YANDEX_FOLDER_ID,
+                    analyze_specs: [{
+                        content: imageBase64,
+                        features: [{ type: 'CLASSIFICATION' }]
+                    }]
+                })
+            }
+        );
+        
+        if (!visionResponse.ok) {
+            const errorText = await visionResponse.text();
+            console.error('[recognize-object] Vision API error:', visionResponse.status, errorText);
+            return res.status(500).json({
+                success: false,
+                recognized: false,
+                mode: 'error',
+                title: messages.errorTitle,
+                description: messages.errorDesc,
+                confidence: 0,
+                rawTags: []
+            });
+        }
+        
+        const visionJson = await visionResponse.json();
+        
+        // Извлекаем теги и оценки
+        const { bestLabel, bestScore, tags, allClasses } = extractVisionTags(visionJson);
+        
+        console.log(`[recognize-object] Vision result: bestLabel="${bestLabel}", bestScore=${bestScore.toFixed(2)}, tags=${tags.length}`);
+        
+        // Определяем, достаточно ли уверено распознавание
+        const isConfident = bestScore >= VISION_GOOD_THRESHOLD && !isGenericTag(bestLabel);
+        const canTryGPT = bestScore >= VISION_MIN_THRESHOLD && tags.length > 0;
+        
+        let recognized = false;
+        let mode = 'unknown';
+        let title = messages.notRecognized;
+        let description = messages.notRecognizedDesc;
+        
+        if (isConfident) {
+            // Vision достаточно уверен — используем его результат
+            recognized = true;
+            mode = 'vision';
+            title = bestLabel;
+            description = tags.length > 1 
+                ? (language === 'ru' ? `Похоже, это: ${tags.slice(0, 5).join(', ')}.` :
+                   language === 'en' ? `This appears to be: ${tags.slice(0, 5).join(', ')}.` :
+                   `这看起来是：${tags.slice(0, 5).join(', ')}。`)
+                : (language === 'ru' ? `Распознано: ${bestLabel}` :
+                   language === 'en' ? `Recognized: ${bestLabel}` :
+                   `识别结果：${bestLabel}`);
+            
+            console.log(`[recognize-object] Mode: vision (confident)`);
+            
+        } else if (canTryGPT) {
+            // Vision не уверен — пробуем GPT
+            console.log(`[recognize-object] Vision uncertain, calling GPT...`);
+            
+            const gptResult = await describeObjectWithYandexGPT(tags, language);
+            
+            if (gptResult.canGuess && gptResult.title) {
+                recognized = true;
+                mode = 'vision+gpt';
+                title = gptResult.title;
+                description = gptResult.description || messages.notRecognizedDesc;
+                
+                console.log(`[recognize-object] Mode: vision+gpt, title="${title}"`);
+            } else {
+                // GPT тоже не смог
+                mode = 'unknown';
+                recognized = false;
+                
+                // Если GPT дал хоть какое-то описание, используем его
+                if (gptResult.description) {
+                    description = gptResult.description;
+                }
+                
+                console.log(`[recognize-object] Mode: unknown (GPT could not guess)`);
+            }
+            
+        } else {
+            // Слишком низкая уверенность даже для GPT
+            mode = 'unknown';
+            recognized = false;
+            
+            console.log(`[recognize-object] Mode: unknown (score too low)`);
+        }
+        
+        // Формируем и отправляем ответ
+        res.json({
+            success: true,
+            recognized,
+            mode,
+            title,
+            description,
+            confidence: bestScore,
+            rawTags: tags,
+            // Сохраняем совместимость со старым форматом
+            labels: tags
+        });
+        
+    } catch (err) {
+        console.error('[recognize-object] Error:', err);
+        res.status(500).json({
+            success: false,
+            recognized: false,
+            mode: 'error',
+            title: messages.errorTitle,
+            description: messages.errorDesc,
+            confidence: 0,
+            rawTags: []
+        });
     }
-
-    // Try to extract the most probable class label
-    let title = 'Объект не распознан';
-    let labels = [];
-    const firstResult = visionJson.results?.[0];
-    const featureResults = firstResult?.results || firstResult?.analysis_results;
-
-    if (Array.isArray(featureResults) && featureResults.length > 0) {
-      const classAnnotations =
-        featureResults[0].classification || featureResults[0].classifications;
-
-      const classes = classAnnotations?.classes || classAnnotations?.[0]?.classes;
-      if (Array.isArray(classes) && classes.length > 0) {
-        labels = classes.map(c => c.name);
-        title = classes[0].name;
-      }
-    }
-
-    res.json({
-      title,
-      labels,
-      description:
-        labels.length > 0
-          ? `Похоже, что это: ${labels.join(', ')}.`
-          : 'К сожалению, сервис не смог распознать объект. Попробуйте подойти ближе или изменить ракурс.'
-    });
-  } catch (err) {
-    console.error('recognize-object error', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
 });
 
 // ============================================
